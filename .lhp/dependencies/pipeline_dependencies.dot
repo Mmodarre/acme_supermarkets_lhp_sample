@@ -1,0 +1,25 @@
+digraph pipeline_dependencies {
+  rankdir=LR;
+  node [shape=box];
+  "raw_ingestions_sap" [label="raw_ingestions_sap\n(17 flowgroups)"];
+  "raw_ingestions_ncr" [label="raw_ingestions_ncr\n(7 flowgroups)"];
+  "raw_ingestions_sfcc" [label="raw_ingestions_sfcc\n(7 flowgroups)"];
+  "silver_facts_sap" [label="silver_facts_sap\n(8 flowgroups)"];
+  "silver_facts_ncr" [label="silver_facts_ncr\n(4 flowgroups)"];
+  "silver_facts_sfcc" [label="silver_facts_sfcc\n(4 flowgroups)"];
+  "silver_dimensions_sap" [label="silver_dimensions_sap\n(9 flowgroups)"];
+  "silver_dimensions_ncr" [label="silver_dimensions_ncr\n(3 flowgroups)"];
+  "silver_dimensions_sfcc" [label="silver_dimensions_sfcc\n(3 flowgroups)"];
+  "bronze_sap" [label="bronze_sap\n(17 flowgroups)"];
+  "bronze_ncr" [label="bronze_ncr\n(7 flowgroups)"];
+  "bronze_sfcc" [label="bronze_sfcc\n(7 flowgroups)"];
+  "raw_ingestions_sap" -> "bronze_sap";
+  "raw_ingestions_ncr" -> "bronze_ncr";
+  "raw_ingestions_sfcc" -> "bronze_sfcc";
+  "bronze_sap" -> "silver_dimensions_sap";
+  "bronze_sap" -> "silver_facts_sap";
+  "bronze_ncr" -> "silver_dimensions_ncr";
+  "bronze_ncr" -> "silver_facts_ncr";
+  "bronze_sfcc" -> "silver_dimensions_sfcc";
+  "bronze_sfcc" -> "silver_facts_sfcc";
+}

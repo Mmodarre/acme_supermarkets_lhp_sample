@@ -1,0 +1,109 @@
+# Product Schema - SAP Master Data
+# Documentation schema matching Database_schema.md
+
+table_name: product
+source_system: sap
+description: "Product master data including SKU, UPC, nutritional information, and pricing"
+
+columns:
+  - name: product_id
+    type: BIGINT
+    nullable: false
+    description: "Primary key, unique product identifier"
+    
+  - name: sku
+    type: STRING
+    nullable: false
+    description: "Stock Keeping Unit, unique product code"
+    
+  - name: upc
+    type: STRING
+    nullable: true
+    description: "Universal Product Code (barcode)"
+    
+  - name: name
+    type: STRING
+    nullable: false
+    description: "Product name"
+    
+  - name: brand_id
+    type: BIGINT
+    nullable: true
+    description: "Foreign key to brand table"
+    
+  - name: category_id
+    type: BIGINT
+    nullable: true
+    description: "Foreign key to category table"
+    
+  - name: uom_id
+    type: BIGINT
+    nullable: true
+    description: "Foreign key to unit of measure table"
+    
+  - name: open_food_facts_code
+    type: STRING
+    nullable: true
+    description: "Open Food Facts database reference code"
+    
+  - name: quantity
+    type: STRING
+    nullable: true
+    description: "Quantity description (e.g., '500ml', '12oz')"
+    
+  - name: packaging
+    type: STRING
+    nullable: true
+    description: "Packaging type and description"
+    
+  - name: nutrition_data
+    type: STRING
+    nullable: true
+    description: "JSON formatted nutritional information"
+    
+  - name: base_cost
+    type: DECIMAL(10,2)
+    nullable: true
+    description: "Base cost per unit"
+    
+  - name: base_price
+    type: DECIMAL(10,2)
+    nullable: true
+    description: "Base selling price per unit"
+    
+  - name: reorder_quantity
+    type: BIGINT
+    nullable: true
+    description: "Minimum quantity to trigger reorder"
+    
+  - name: shelf_life_days
+    type: BIGINT
+    nullable: true
+    description: "Product shelf life in days"
+    
+  - name: status
+    type: STRING
+    nullable: false
+    description: "Product status (active, discontinued, etc.)"
+    
+  - name: created_at
+    type: TIMESTAMP
+    nullable: false
+    description: "Record creation timestamp"
+    
+  - name: updated_at
+    type: TIMESTAMP
+    nullable: false
+    description: "Record last update timestamp"
+    
+  - name: last_update_dttm
+    type: TIMESTAMP
+    nullable: false
+    description: "Last modification timestamp for CDC sequencing"
+
+business_rules:
+  - "Product records are delivered as full snapshots daily"
+  - "SCD Type 2 tracking for all attribute changes except audit columns"
+  - "SKU must be unique across all products"
+  - "Status typically: active, discontinued, pending, inactive"
+

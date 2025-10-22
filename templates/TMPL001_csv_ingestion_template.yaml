@@ -1,0 +1,52 @@
+# This is a template for ingesting CSV files with schema enforcement
+# It is used to generate the actions for the pipeline
+# within the pipeline all it need to defined are the parameters for the table name and landing folder
+# the template will generate the actions for the pipeline
+
+name: TMPL001_csv_ingestion_template
+version: "1.0"
+description: "Standard template for ingesting CSV files with schema enforcement"
+
+parameters:
+  - name: table_name
+    type: string
+    required: true
+    description: "Name of the table to ingest"
+  - name: landing_folder
+    type: string
+    required: true
+    description: "Name of the landing folder"
+  - name: max_files_per_trigger
+    type: number
+    required: false
+    default: 100
+    description: "Maximum files to process per trigger"
+
+
+actions:
+  - name: load_{{ table_name }}_csv
+    type: load
+    readMode: stream
+    operational_metadata: ["_source_file_path","_processing_timestamp"]
+    source:
+      type: cloudfiles
+      path: "{landing_path}/{{ landing_folder }}/"
+      format: csv
+      options:
+        cloudFiles.format: csv
+        cloudFiles.maxFilesPerTrigger: "{{ max_files_per_trigger }}"
+        cloudFiles.inferColumnTypes: True
+        cloudFiles.schemaEvolutionMode: "addNewColumns"
+        cloudFiles.rescuedDataColumn: "_rescued_data"
+    target: vw_{{ table_name }}_raw
+    description: "Load {{ table_name }} from CSV files"
+
+
+  - name: write_{{ table_name }}_csv
+    type: write
+    source: vw_{{ table_name }}_raw
+    write_target:
+      type: streaming_table
+      database: "{catalog}.{raw_schema}"
+      table: "{{ table_name }}"
+    description: "Write {{ table_name }} to raw schema"

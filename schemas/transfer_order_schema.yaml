@@ -1,0 +1,40 @@
+name: transfer_order
+version: "1.0"
+description: "Transfer order header (accumulating snapshot fact) - as per Database_schema.md"
+
+columns:
+  - name: transfer_id
+    type: BIGINT
+    nullable: false
+    comment: "Transfer order ID (primary key)"
+  - name: source_location_id
+    type: BIGINT
+    nullable: false
+    comment: "Source location FK"
+  - name: dest_location_id
+    type: BIGINT
+    nullable: false
+    comment: "Destination location FK"
+  - name: created_at
+    type: TIMESTAMP
+    nullable: false
+    comment: "Order creation timestamp"
+  - name: shipped_at
+    type: TIMESTAMP
+    nullable: true
+    comment: "Shipment timestamp"
+  - name: received_at
+    type: TIMESTAMP
+    nullable: true
+    comment: "Receipt timestamp"
+  - name: status
+    type: STRING
+    nullable: false
+    comment: "Transfer order status (default: active)"
+  - name: last_update_dttm
+    type: TIMESTAMP
+    nullable: false
+    comment: "Last update timestamp for CDC sequencing"
+
+primary_key: [transfer_id]
+

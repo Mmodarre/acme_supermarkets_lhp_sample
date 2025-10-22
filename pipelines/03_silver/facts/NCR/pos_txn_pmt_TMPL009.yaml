@@ -1,0 +1,22 @@
+# POS Transaction Payment - Transactional Fact
+# Uses silver_transactional_fact_template
+
+pipeline: silver_facts_ncr
+flowgroup: pos_txn_pmt_silver_TMPL009
+
+use_template: TMPL009_silver_transactional_fact_template
+template_parameters:
+  table_name: pos_txn_pmt
+  source_system: ncr
+  source_table: brz_ncr_pos_txn_pmt
+  type_casting:
+    payment_id: "BIGINT"
+    txn_id: "BIGINT"
+    method_id: "BIGINT"
+    amount: "DECIMAL(10,2)"
+    auth_code: "STRING"
+    captured_at: "TIMESTAMP"
+    payment_details: "STRING"
+    last_update_dttm: "TIMESTAMP"
+    _processing_timestamp: "TIMESTAMP"
+

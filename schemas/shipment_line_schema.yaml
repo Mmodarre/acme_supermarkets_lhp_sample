@@ -1,0 +1,32 @@
+name: shipment_line
+version: "1.0"
+description: "Shipment line (transactional fact) - as per Database_schema.md"
+
+columns:
+  - name: shipment_line_id
+    type: BIGINT
+    nullable: false
+    comment: "Shipment line ID (primary key)"
+  - name: shipment_id
+    type: BIGINT
+    nullable: false
+    comment: "Shipment FK"
+  - name: order_line_id
+    type: BIGINT
+    nullable: false
+    comment: "Sales order line FK"
+  - name: product_id
+    type: BIGINT
+    nullable: false
+    comment: "Product FK"
+  - name: qty
+    type: BIGINT
+    nullable: false
+    comment: "Quantity"
+  - name: last_update_dttm
+    type: TIMESTAMP
+    nullable: false
+    comment: "Last update timestamp"
+
+primary_key: [shipment_line_id]
+

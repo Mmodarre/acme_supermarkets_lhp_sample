@@ -1,0 +1,9 @@
+pipeline: raw_ingestions_sap
+flowgroup: sap_prd_snapshot_ingestion_TMPL001
+
+use_template: TMPL001_csv_ingestion_template
+
+
+template_parameters:
+  table_name: raw_sap_prd_snapshot
+  landing_folder: product_csv

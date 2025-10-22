@@ -1,0 +1,63 @@
+name: TMPL004_raw_to_bronze_standard_template
+version: "1.0"
+description: "Standard template for raw to bronze ingestion with DQE, cleansing, and optional surrogate keys"
+
+parameters:
+  - name: raw_table_name
+    required: true
+    description: "Name of the table to ingest"
+  - name: bronze_table_name
+    required: true
+    description: "Name of the table to ingest into the bronze schema"
+  - name: generate_surrogate_key
+    required: false
+    default: false
+    description: "Whether to generate a surrogate key using xxhash64"
+  - name: surrogate_key_name
+    required: false
+    default: "surrogate_key"
+    description: "Name of the surrogate key column"
+
+actions:
+  - name: load_{{ raw_table_name }}_delta
+    type: load
+    operational_metadata: ["_processing_timestamp"]
+    readMode: stream
+    source:
+      type: delta
+      database: "{catalog}.{raw_schema}"
+      table: "{{ raw_table_name }}"
+    target: vw_{{ raw_table_name }}
+    description: "Load {{ raw_table_name }} table from raw schema" 
+
+  - name: DQE_{{ raw_table_name }}_delta
+    type: transform
+    transform_type: data_quality
+    source: vw_{{ raw_table_name }}
+    target: vw_{{ bronze_table_name }}_DQE
+    readMode: stream  
+    expectations_file: "expectations/check_no_rescued_data.json"
+    description: "Apply data quality checks to {{ raw_table_name }} for having no rescued data"
+
+  - name: cleanse_{{ raw_table_name }}_delta
+    type: transform
+    transform_type: sql
+    source: vw_{{ bronze_table_name }}_DQE
+    target: vw_{{ bronze_table_name }}_cleaned
+    sql: |
+      SELECT 
+        {% if generate_surrogate_key %}xxhash64(* except (_processing_timestamp, _source_file_path)) as {{ surrogate_key_name }},
+        {% endif %}* except (_rescued_data)
+      FROM stream(vw_{{ bronze_table_name }}_DQE)
+
+
+
+  - name: write_{{ bronze_table_name }}_delta
+    type: write
+    source: vw_{{ bronze_table_name }}_cleaned
+    write_target:
+      type: streaming_table
+      database: "{catalog}.{bronze_schema}"
+      table: "{{ bronze_table_name }}"
+      table_properties:
+        quality: "bronze"

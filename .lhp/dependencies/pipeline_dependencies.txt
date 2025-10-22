@@ -1,0 +1,123 @@
+================================================================================
+LAKEHOUSE PLUMBER - PIPELINE DEPENDENCY ANALYSIS
+================================================================================
+Generated at: 2025-10-22 16:06:50
+
+SUMMARY
+----------------------------------------
+Total Pipelines: 12
+Total Execution Stages: 3
+External Sources: 1
+Circular Dependencies: 0
+
+EXECUTION ORDER
+----------------------------------------
+Stage 1: raw_ingestions_sap, raw_ingestions_ncr, raw_ingestions_sfcc (parallel)
+Stage 2: bronze_sap, bronze_ncr, bronze_sfcc (parallel)
+Stage 3: silver_dimensions_sap, silver_facts_sap, silver_dimensions_ncr, silver_facts_ncr, silver_dimensions_sfcc, silver_facts_sfcc (parallel)
+
+PIPELINE DETAILS
+----------------------------------------
+Pipeline: bronze_ncr
+  Flowgroups: 7
+  Actions: 31
+  Depends on: raw_ingestions_ncr
+  Stage: 1
+  Can run parallel: True
+
+Pipeline: bronze_sap
+  Flowgroups: 17
+  Actions: 78
+  Depends on: raw_ingestions_sap
+  Stage: 1
+  Can run parallel: True
+
+Pipeline: bronze_sfcc
+  Flowgroups: 7
+  Actions: 28
+  Depends on: raw_ingestions_sfcc
+  Stage: 1
+  Can run parallel: True
+
+Pipeline: raw_ingestions_ncr
+  Flowgroups: 7
+  Actions: 21
+  Depends on: None
+  Stage: 0
+  Can run parallel: True
+
+Pipeline: raw_ingestions_sap
+  Flowgroups: 17
+  Actions: 50
+  Depends on: None
+  Stage: 0
+  Can run parallel: True
+
+Pipeline: raw_ingestions_sfcc
+  Flowgroups: 7
+  Actions: 21
+  Depends on: None
+  Stage: 0
+  Can run parallel: True
+
+Pipeline: silver_dimensions_ncr
+  Flowgroups: 3
+  Actions: 9
+  Depends on: bronze_ncr
+  Stage: 2
+  Can run parallel: True
+
+Pipeline: silver_dimensions_sap
+  Flowgroups: 9
+  Actions: 25
+  Depends on: bronze_sap
+  Stage: 2
+  Can run parallel: True
+  External sources: bronze_sap_prd_snapshot
+
+Pipeline: silver_dimensions_sfcc
+  Flowgroups: 3
+  Actions: 9
+  Depends on: bronze_sfcc
+  Stage: 2
+  Can run parallel: True
+
+Pipeline: silver_facts_ncr
+  Flowgroups: 4
+  Actions: 12
+  Depends on: bronze_ncr
+  Stage: 2
+  Can run parallel: True
+
+Pipeline: silver_facts_sap
+  Flowgroups: 8
+  Actions: 28
+  Depends on: bronze_sap
+  Stage: 2
+  Can run parallel: True
+
+Pipeline: silver_facts_sfcc
+  Flowgroups: 4
+  Actions: 14
+  Depends on: bronze_sfcc
+  Stage: 2
+  Can run parallel: True
+
+EXTERNAL SOURCES
+----------------------------------------
+  bronze_sap_prd_snapshot
+
+DEPENDENCY TREE
+----------------------------------------
+├── raw_ingestions_ncr (7 flowgroups, 21 actions)
+│   └── bronze_ncr (7 flowgroups, 31 actions)
+│       ├── silver_dimensions_ncr (3 flowgroups, 9 actions)
+│       └── silver_facts_ncr (4 flowgroups, 12 actions)
+├── raw_ingestions_sap (17 flowgroups, 50 actions)
+│   └── bronze_sap (17 flowgroups, 78 actions)
+│       ├── silver_dimensions_sap (9 flowgroups, 25 actions)
+│       └── silver_facts_sap (8 flowgroups, 28 actions)
+└── raw_ingestions_sfcc (7 flowgroups, 21 actions)
+    └── bronze_sfcc (7 flowgroups, 28 actions)
+        ├── silver_dimensions_sfcc (3 flowgroups, 9 actions)
+        └── silver_facts_sfcc (4 flowgroups, 14 actions)

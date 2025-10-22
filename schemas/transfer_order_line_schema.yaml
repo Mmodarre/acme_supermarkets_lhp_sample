@@ -1,0 +1,32 @@
+name: transfer_order_line
+version: "1.0"
+description: "Transfer order line (transactional fact) - as per Database_schema.md"
+
+columns:
+  - name: transfer_line_id
+    type: BIGINT
+    nullable: false
+    comment: "Transfer line ID (primary key)"
+  - name: transfer_id
+    type: BIGINT
+    nullable: false
+    comment: "Transfer order FK"
+  - name: product_id
+    type: BIGINT
+    nullable: false
+    comment: "Product FK"
+  - name: qty
+    type: BIGINT
+    nullable: false
+    comment: "Quantity"
+  - name: uom_id
+    type: BIGINT
+    nullable: false
+    comment: "Unit of measure FK"
+  - name: last_update_dttm
+    type: TIMESTAMP
+    nullable: false
+    comment: "Last update timestamp"
+
+primary_key: [transfer_line_id]
+

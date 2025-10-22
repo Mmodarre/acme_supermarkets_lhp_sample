@@ -1,0 +1,7 @@
+pipeline: raw_ingestions_sap
+flowgroup: sap_carrier_ingestion_TMPL003
+
+use_template: TMPL003_parquet_ingestion_template
+template_parameters:
+  table_name: raw_sap_carrier
+  landing_folder: carrier

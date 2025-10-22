@@ -1,0 +1,64 @@
+name: TMPL009_silver_transactional_fact_template
+version: "1.0"
+description: "Template for silver layer transactional facts with schema transform (append-only, no CDC)"
+
+parameters:
+  - name: table_name
+    type: string
+    required: true
+    description: "Short name for the fact (e.g., 'prch_ord_ln', 'pos_txn_ln')"
+  
+  - name: source_system
+    type: string
+    required: true
+    description: "Source system prefix (e.g., 'sap', 'ncr', 'sfcc')"
+  
+  - name: source_table
+    type: string
+    required: true
+    description: "Bronze table name (e.g., 'brz_sap_prch_ord_ln')"
+  
+  - name: type_casting
+    type: object
+    required: true
+    description: "Column name to data type mapping for schema transform"
+
+actions:
+  # Step 1: Load from bronze layer
+  - name: "load_{{ table_name }}_bronze"
+    type: load
+    readMode: stream
+    source:
+      type: delta
+      database: "{catalog}.{bronze_schema}"
+      table: "{{ source_table }}"
+    target: "v_{{ table_name }}_bronze"
+    description: "Load {{ table_name }} from bronze"
+    
+  # Step 2: Schema transform - type casting only (keep original column names)
+  - name: "transform_{{ table_name }}_schema"
+    type: transform
+    transform_type: schema
+    source:
+      view: "v_{{ table_name }}_bronze"
+      schema:
+        enforcement: flexible
+        type_casting: "{{ type_casting }}"
+    target: "v_{{ table_name }}_standardized"
+    readMode: stream
+    description: "Apply type casting to {{ table_name }} (keep original column names)"
+    
+  # Step 3: Write to silver fact table (append-only, no CDC)
+  - name: "write_{{ table_name }}_silver"
+    type: write
+    source: "v_{{ table_name }}_standardized"
+    write_target:
+      type: streaming_table
+      database: "{catalog}.{silver_schema}"
+      table: "fct_{{ source_system }}_{{ table_name }}"
+      table_properties:
+        delta.enableChangeDataFeed: "true"
+        table.type: "fact"
+        fact.type: "transactional"
+    description: "{{ table_name }} transactional fact (append-only)"
+

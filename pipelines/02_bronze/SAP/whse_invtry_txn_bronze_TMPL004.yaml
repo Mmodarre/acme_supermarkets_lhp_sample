@@ -1,0 +1,15 @@
+# Warehouse master data ingestion from SAP
+# Pipeline variable puts the generate files in the same folder for the pipeline to pick up
+pipeline: bronze_sap
+# Flowgroup are conceptual artifacts and has no functional purpose
+# there are used to group actions together in the generated files
+flowgroup: bronze_sap_whse_invtry_txn_TMPL004 
+
+# Use the template to generate the actions for the pipeline
+# Template parameters are used to pass in the table name and landing folder
+# The template will generate the actions for the pipeline
+use_template: TMPL004_raw_to_bronze_standard_template
+template_parameters:
+  raw_table_name: raw_sap_whse_invtry_txn
+  bronze_table_name: bronze_sap_whse_invtry_txn
+

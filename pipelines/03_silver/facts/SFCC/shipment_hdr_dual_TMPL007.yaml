@@ -1,0 +1,47 @@
+# Shipment Header - Accumulating Snapshot Fact with Dual Tables
+# Uses silver_accumulating_fact_template
+
+pipeline: silver_facts_sfcc
+flowgroup: shmpt_hdr_silver_TMPL007
+
+use_template: TMPL007_silver_accumulating_fact_template
+template_parameters:
+  table_name: shmpt_hdr
+  source_system: sfcc
+  source_table: bronze_sfcc_shmpt_hdr
+  primary_keys:
+    - "shipment_id"
+  type_casting:
+    shipment_id: "BIGINT"
+    order_id: "BIGINT"
+    warehouse_id: "BIGINT"
+    carrier_id: "BIGINT"
+    tracking_number: "STRING"
+    ship_date: "DATE"
+    expected_delivery_date: "DATE"
+    actual_delivery_date: "DATE"
+    status: "STRING"
+    created_at: "TIMESTAMP"
+    updated_at: "TIMESTAMP"
+    last_update_dttm: "TIMESTAMP"
+    _processing_timestamp: "TIMESTAMP"
+  track_history_except:
+    - "_processing_timestamp"
+    - "_source_file_path"
+    - "last_update_dttm"
+  status_column: status
+  status_values:
+    - "in_transit"
+    - "out_for_delivery"
+    - "delivered"
+  sequence_by: "last_update_dttm"
+  group_by_columns:
+    - "shipment_id"
+    - "order_id"
+    - "warehouse_id"
+  additional_columns:
+    - "carrier_id"
+    - "tracking_number"
+    - "ship_date"
+    - "expected_delivery_date"
+    - "actual_delivery_date"

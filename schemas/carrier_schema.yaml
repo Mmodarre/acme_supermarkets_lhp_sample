@@ -1,0 +1,28 @@
+name: carrier
+version: "1.0"
+description: "Carrier dimension - as per Database_schema.md"
+
+columns:
+  - name: carrier_id
+    type: BIGINT
+    nullable: false
+    comment: "Carrier ID (primary key)"
+  - name: name
+    type: STRING
+    nullable: false
+    comment: "Carrier name"
+  - name: contact_info
+    type: STRING
+    nullable: true
+    comment: "Carrier contact information"
+  - name: status
+    type: STRING
+    nullable: false
+    comment: "Carrier status (default: active)"
+  - name: last_update_dttm
+    type: TIMESTAMP
+    nullable: false
+    comment: "Last update timestamp for CDC sequencing"
+
+primary_key: [carrier_id]
+

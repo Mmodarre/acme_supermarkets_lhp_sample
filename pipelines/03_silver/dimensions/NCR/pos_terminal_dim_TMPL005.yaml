@@ -1,0 +1,27 @@
+# POS terminal dimension with SCD Type 2
+# Uses silver_dimension_scd2_template
+
+pipeline: silver_dimensions_ncr
+flowgroup: pos_terminal_dim_TMPL005
+
+use_template: TMPL005_silver_dimension_scd2_template
+template_parameters:
+  table_name: pos_term
+  source_system: ncr
+  source_table: bronze_ncr_pos_term
+  primary_keys:
+    - "terminal_id"
+  sequence_by: "last_update_dttm"
+  type_casting:
+    terminal_id: "BIGINT"
+    store_id: "BIGINT"
+    name: "STRING"
+    terminal_number: "STRING"
+    installed_at: "TIMESTAMP"
+    status: "STRING"
+    last_update_dttm: "TIMESTAMP"
+  track_history_except:
+    - "_processing_timestamp"
+    - "_source_file_path"
+    - "last_update_dttm"
+

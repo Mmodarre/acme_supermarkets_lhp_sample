@@ -1,0 +1,25 @@
+# Payment terms dimension with SCD Type 2
+# Uses silver_dimension_scd2_template
+
+pipeline: silver_dimensions_sap
+flowgroup: payment_terms_dim_TMPL005
+
+use_template: TMPL005_silver_dimension_scd2_template
+template_parameters:
+  table_name: pmt_terms
+  source_system: sap
+  source_table: bronze_sap_pmt_terms
+  primary_keys:
+    - "payment_terms_id"
+  sequence_by: "last_update_dttm"
+  type_casting:
+    payment_terms_id: "BIGINT"
+    name: "STRING"
+    description: "STRING"
+    days: "BIGINT"
+    last_update_dttm: "TIMESTAMP"
+  track_history_except:
+    - "_processing_timestamp"
+    - "_source_file_path"
+    - "last_update_dttm"
+

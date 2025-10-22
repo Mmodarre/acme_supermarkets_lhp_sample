@@ -1,0 +1,104 @@
+name: sales_order
+version: "1.0"
+description: "Sales order header (accumulating snapshot fact) - as per Database_schema.md"
+
+columns:
+  - name: order_id
+    type: BIGINT
+    nullable: false
+    comment: "Order ID (primary key)"
+  - name: order_number
+    type: STRING
+    nullable: false
+    comment: "Order number (unique)"
+  - name: customer_id
+    type: BIGINT
+    nullable: false
+    comment: "Customer FK"
+  - name: order_date
+    type: TIMESTAMP
+    nullable: false
+    comment: "Order date"
+  - name: delivery_address_id
+    type: BIGINT
+    nullable: false
+    comment: "Delivery address FK"
+  - name: shipping_method
+    type: STRING
+    nullable: false
+    comment: "Shipping method"
+  - name: payment_method_id
+    type: BIGINT
+    nullable: false
+    comment: "Payment method FK"
+  - name: payment_details
+    type: STRING
+    nullable: true
+    comment: "Payment details JSON"
+  - name: currency
+    type: STRING
+    nullable: false
+    comment: "Currency code (default: USD)"
+  - name: subtotal
+    type: DECIMAL(10,2)
+    nullable: false
+    comment: "Subtotal amount"
+  - name: tax_amount
+    type: DECIMAL(10,2)
+    nullable: false
+    comment: "Tax amount"
+  - name: shipping_amount
+    type: DECIMAL(10,2)
+    nullable: false
+    comment: "Shipping amount"
+  - name: discount_amount
+    type: DECIMAL(10,2)
+    nullable: false
+    comment: "Discount amount (default: 0)"
+  - name: total_amount
+    type: DECIMAL(10,2)
+    nullable: false
+    comment: "Total amount"
+  - name: fulfillment_status
+    type: STRING
+    nullable: false
+    comment: "Fulfillment status (default: pending)"
+  - name: warehouse_id
+    type: BIGINT
+    nullable: true
+    comment: "Fulfillment warehouse FK"
+  - name: estimated_delivery_date
+    type: DATE
+    nullable: true
+    comment: "Estimated delivery date"
+  - name: actual_delivery_date
+    type: DATE
+    nullable: true
+    comment: "Actual delivery date"
+  - name: tracking_number
+    type: STRING
+    nullable: true
+    comment: "Tracking number"
+  - name: carrier_id
+    type: BIGINT
+    nullable: true
+    comment: "Carrier FK"
+  - name: status
+    type: STRING
+    nullable: false
+    comment: "Order status (default: active)"
+  - name: created_at
+    type: TIMESTAMP
+    nullable: false
+    comment: "Record creation timestamp"
+  - name: updated_at
+    type: TIMESTAMP
+    nullable: false
+    comment: "Record last update timestamp"
+  - name: last_update_dttm
+    type: TIMESTAMP
+    nullable: false
+    comment: "Last update timestamp for CDC sequencing"
+
+primary_key: [order_id]
+

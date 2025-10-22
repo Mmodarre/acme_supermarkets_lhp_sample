@@ -1,0 +1,15 @@
+# This pipeline is used to ingest POS transactions from NCR
+# Pipeline variable puts the generate files in the same folder for the pipeline to pick up
+pipeline: raw_ingestions_ncr
+# Flowgroup are conceptual artifacts and has no functional purpose
+# there are used to group actions together in the generated files
+flowgroup: pos_txn_by_store_ingestion_TMPL002
+
+# Use the template to generate the actions for the pipeline
+# Template parameters are used to pass in the table name and landing folder
+# The template will generate the actions for the pipeline
+use_template: TMPL002_json_text_ingestion_template
+template_parameters:
+  table_name: raw_ncr_pos_txn_by_store
+  landing_folder: pos_transactions_by_store
+

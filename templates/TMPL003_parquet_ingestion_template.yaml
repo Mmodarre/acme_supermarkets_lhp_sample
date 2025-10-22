@@ -1,0 +1,53 @@
+# This is a template for ingesting CSV files with schema enforcement
+# It is used to generate the actions for the pipeline
+# within the pipeline all it need to defined are the parameters for the table name and landing folder
+# the template will generate the actions for the pipeline
+
+name: TMPL003_parquet_ingestion_template
+version: "1.0"
+description: "Standard template for ingesting Parquet files"
+
+parameters:
+  - name: table_name
+    required: true
+    description: "Name of the table to ingest"
+  - name: landing_folder
+    required: true
+    description: "Name of the landing folder"
+  - name: table_properties
+    required: false
+    description: "Optional table properties as key-value pairs"
+    default: {}
+
+actions:
+  - name: load_{{ table_name }}_parquet
+    type: load
+    source:
+      type: cloudfiles
+      path: "{landing_path}/{{ landing_folder }}"
+      format: parquet
+    target: vw_{{ table_name }}_raw
+    operational_metadata: ["_source_file_path","_processing_timestamp"]
+    description: "Load {{ table_name }} from Parquet files"
+
+  - name: convert_timestamp_{{ table_name }}
+    type: transform
+    transform_type: python
+    readMode: stream
+    source: vw_{{ table_name }}_raw
+    target: vw_{{ table_name }}_converted
+    module_path: "py_functions/timestamp_converter.py"
+    function_name: "convert_timestampntz_to_timestamp"
+    parameters:
+      table_name: "{{ table_name }}"
+    description: "Convert timestampntz columns to timestamp"
+
+  - name: write_{{ table_name }}_parquet
+    type: write
+    source: vw_{{ table_name }}_converted
+    write_target:
+      type: streaming_table
+      database: "{catalog}.{raw_schema}"
+      table: "{{ table_name }}"
+    description: "Write {{ table_name }}_parquet to raw schema"
+    # operational_metadata: ["_processing_timestamp"]

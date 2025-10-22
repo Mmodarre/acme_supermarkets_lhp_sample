@@ -1,0 +1,90 @@
+name: TMPL006_silver_fact_scd2_template
+version: "1.0"
+description: "Template for silver layer fact tables with schema transform and SCD Type 2"
+
+parameters:
+  - name: table_name
+    type: string
+    required: true
+    description: "Short name for the fact (e.g., 'str_invtry', 'whse_invtry')"
+  
+  - name: source_system
+    type: string
+    required: true
+    description: "Source system prefix (e.g., 'ncr', 'sap')"
+  
+  - name: source_table
+    type: string
+    required: true
+    description: "Bronze table name (e.g., 'bronze_ncr_str_invtry')"
+  
+  - name: primary_keys
+    type: array
+    required: true
+    description: "Primary key columns for the fact"
+  
+  - name: type_casting
+    type: object
+    required: true
+    description: "Column name to data type mapping for schema transform"
+  
+  - name: sequence_by
+    type: string
+    required: false
+    default: "last_update_dttm"
+    description: "Column to determine order of changes (e.g., 'last_update_dttm', 'updated_at')"
+  
+  - name: track_history_except
+    type: array
+    required: false
+    default:
+      - "_processing_timestamp"
+      - "last_update_dttm"
+    description: "Columns to exclude from history tracking"
+
+actions:
+  # Step 1: Load from bronze layer
+  - name: "load_bronze_{{ source_system }}_{{ table_name }}"
+    type: load
+    readMode: stream
+    source:
+      type: delta
+      database: "{catalog}.{bronze_schema}"
+      table: "{{ source_table }}"
+    target: "v_bronze_{{ source_system }}_{{ table_name }}"
+    description: "Load {{ table_name }} data from bronze layer"
+    
+  # Step 2: Schema transform - type casting only (keep original column names)
+  - name: "transform_{{ table_name }}_schema"
+    type: transform
+    transform_type: schema
+    source:
+      view: "v_bronze_{{ source_system }}_{{ table_name }}"
+      schema:
+        enforcement: flexible
+        type_casting: "{{ type_casting }}"
+    target: "v_{{ table_name }}_standardized"
+    readMode: stream
+    description: "Apply type casting to {{ table_name }} data (keep original column names)"
+    
+  # Step 3: Write to fact table with SCD Type 2
+  - name: "write_{{ table_name }}_fact_scd2"
+    type: write
+    source: "v_{{ table_name }}_standardized"
+    write_target:
+      type: streaming_table
+      database: "{catalog}.{silver_schema}"
+      table: "fct_{{ source_system }}_{{ table_name }}"
+      mode: cdc
+      cdc_config:
+        keys: "{{ primary_keys }}"
+        sequence_by: "{{ sequence_by }}"
+        scd_type: 2
+        track_history_except_column_list: "{{ track_history_except }}"
+      table_properties:
+        delta.enableChangeDataFeed: "true"
+        table.type: "fact"
+        fact.type: "scd2"
+    description: "{{ table_name }} fact with SCD Type 2 - tracks history of all changes except audit columns"
+
+

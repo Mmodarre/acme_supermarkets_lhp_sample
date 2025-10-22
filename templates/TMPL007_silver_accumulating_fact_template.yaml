@@ -1,0 +1,133 @@
+name: TMPL007_silver_accumulating_fact_template
+version: "1.0"
+description: "Template for silver layer accumulating snapshot facts with schema transform, pivot, and dual tables (snapshot + historical)"
+
+parameters:
+  - name: table_name
+    type: string
+    required: true
+    description: "Short name for the fact (e.g., 'prch_ord_hdr', 'xfer_ord_hdr')"
+  
+  - name: source_system
+    type: string
+    required: true
+    description: "Source system prefix (e.g., 'sap', 'sfcc')"
+  
+  - name: source_table
+    type: string
+    required: true
+    description: "Bronze table name (e.g., 'brz_sap_prch_ord_hdr')"
+  
+  - name: primary_keys
+    type: array
+    required: true
+    description: "Primary key columns for the fact"
+  
+  - name: type_casting
+    type: object
+    required: true
+    description: "Column name to data type mapping for schema transform"
+  
+  - name: status_column
+    type: string
+    required: true
+    description: "Name of the status column to pivot (e.g., 'status')"
+  
+  - name: status_values
+    type: array
+    required: true
+    description: "List of status values to create milestone date columns (e.g., ['pending', 'approved', 'shipped'])"
+  
+  - name: group_by_columns
+    type: array
+    required: true
+    description: "Columns to group by in pivot SQL (typically PK and dimension FKs)"
+  
+  - name: additional_columns
+    type: array
+    required: false
+    default: []
+    description: "Additional columns to include in pivot (non-grouped, use MAX aggregation)"
+  
+  - name: sequence_by
+    type: string
+    required: true
+    default: "last_update_dttm"
+    description: "Column to determine order of changes (e.g., 'last_update_dttm', 'updated_at')"
+  
+  - name: track_history_except
+    type: array
+    required: false
+    default:
+      - "_processing_timestamp"
+      - "_source_file_path"
+      - "last_update_dttm"
+    description: "Columns to exclude from history tracking in SCD Type 2 historical table"
+
+actions:
+  # Step 1: Load from bronze layer
+  - name: "load_{{ table_name }}_bronze"
+    type: load
+    readMode: stream
+    source:
+      type: delta
+      database: "{catalog}.{bronze_schema}"
+      table: "{{ source_table }}"
+    target: "v_{{ table_name }}_bronze"
+    description: "Load {{ table_name }} from bronze"
+    
+  # Step 2: Schema transform - type casting only (keep original column names)
+  - name: "transform_{{ table_name }}_schema"
+    type: transform
+    transform_type: schema
+    source:
+      view: "v_{{ table_name }}_bronze"
+      schema:
+        enforcement: flexible
+        type_casting: "{{ type_casting }}"
+    target: "v_{{ table_name }}_standardized"
+    readMode: stream
+    description: "Apply type casting to {{ table_name }} (keep original column names)"
+    
+  # Step 3: Write historical table (SCD Type 2) - SOURCE OF TRUTH
+  - name: "write_{{ table_name }}_historical"
+    type: write
+    source: "v_{{ table_name }}_standardized"
+    write_target:
+      type: streaming_table
+      database: "{catalog}.{silver_schema}"
+      table: "fct_{{ source_system }}_{{ table_name }}_hist"
+      mode: cdc
+      cdc_config:
+        keys: "{{ primary_keys }}"
+        sequence_by: "{{ sequence_by }}"
+        scd_type: 2
+        track_history_except_column_list: "{{ track_history_except }}"
+      table_properties:
+        table.type: "fact"
+        fact.type: "accumulating_snapshot_history_scd2"
+    description: "Historical changes to {{ table_name }} - tracks status and date changes (SCD Type 2)"
+    
+  # Step 4: Create accumulating snapshot materialized view from historical table
+  - name: "create_{{ table_name }}_snapshot_mv"
+    type: write
+    readMode: batch
+    write_target:
+      type: materialized_view
+      database: "{catalog}.{silver_schema}"
+      table: "fct_{{ source_system }}_{{ table_name }}_snapshot"
+      sql: |
+        SELECT 
+          {% for col in group_by_columns %}{{ col }},
+          {% endfor %}{% for status in status_values %}MIN(CASE WHEN {{ status_column }} = '{{ status }}' THEN last_update_dttm END) as {{ status }}_date,
+          {% endfor %}MAX(CASE WHEN __end_at IS NULL THEN {{ status_column }} END) as current_status,
+          MAX(CASE WHEN __end_at IS NULL THEN last_update_dttm END) as last_update_dttm{% if additional_columns %},
+          {% for col in additional_columns %}MAX(CASE WHEN __end_at IS NULL THEN {{ col }} END) as {{ col }}{% if not loop.last %},
+          {% endif %}{% endfor %}{% endif %}
+        FROM {catalog}.{silver_schema}.fct_{{ source_system }}_{{ table_name }}_hist
+        GROUP BY {% for col in group_by_columns %}{{ col }}{% if not loop.last %}, {% endif %}{% endfor %}
+      table_properties:
+        table.type: "fact"
+        fact.type: "accumulating_snapshot"
+    description: "Materialized view: Accumulating snapshot with pivoted milestone dates for {{ source_system }}_{{ table_name }} - one row per PK showing when each status occurred"
+

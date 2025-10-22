@@ -1,0 +1,25 @@
+# Unit of measure dimension with SCD Type 2
+# Uses silver_dimension_scd2_template
+
+pipeline: silver_dimensions_sap
+flowgroup: uom_dim_TMPL005
+
+use_template: TMPL005_silver_dimension_scd2_template
+template_parameters:
+  table_name: uom
+  source_system: sap
+  source_table: bronze_sap_uom
+  primary_keys:
+    - "uom_id"
+  sequence_by: "last_update_dttm"
+  type_casting:
+    uom_id: "BIGINT"
+    code: "STRING"
+    name: "STRING"
+    uom_type: "STRING"
+    last_update_dttm: "TIMESTAMP"
+  track_history_except:
+    - "_processing_timestamp"
+    - "_source_file_path"
+    - "last_update_dttm"
+

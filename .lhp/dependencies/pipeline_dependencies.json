@@ -1,0 +1,155 @@
+{
+  "metadata": {
+    "total_pipelines": 12,
+    "total_external_sources": 1,
+    "total_stages": 3,
+    "has_circular_dependencies": false
+  },
+  "pipelines": {
+    "raw_ingestions_sap": {
+      "depends_on": [],
+      "flowgroup_count": 17,
+      "action_count": 50,
+      "external_sources": [],
+      "can_run_parallel": true,
+      "stage": 0
+    },
+    "raw_ingestions_ncr": {
+      "depends_on": [],
+      "flowgroup_count": 7,
+      "action_count": 21,
+      "external_sources": [],
+      "can_run_parallel": true,
+      "stage": 0
+    },
+    "raw_ingestions_sfcc": {
+      "depends_on": [],
+      "flowgroup_count": 7,
+      "action_count": 21,
+      "external_sources": [],
+      "can_run_parallel": true,
+      "stage": 0
+    },
+    "silver_facts_sap": {
+      "depends_on": [
+        "bronze_sap"
+      ],
+      "flowgroup_count": 8,
+      "action_count": 28,
+      "external_sources": [],
+      "can_run_parallel": true,
+      "stage": 2
+    },
+    "silver_facts_ncr": {
+      "depends_on": [
+        "bronze_ncr"
+      ],
+      "flowgroup_count": 4,
+      "action_count": 12,
+      "external_sources": [],
+      "can_run_parallel": true,
+      "stage": 2
+    },
+    "silver_facts_sfcc": {
+      "depends_on": [
+        "bronze_sfcc"
+      ],
+      "flowgroup_count": 4,
+      "action_count": 14,
+      "external_sources": [],
+      "can_run_parallel": true,
+      "stage": 2
+    },
+    "silver_dimensions_sap": {
+      "depends_on": [
+        "bronze_sap"
+      ],
+      "flowgroup_count": 9,
+      "action_count": 25,
+      "external_sources": [
+        "bronze_sap_prd_snapshot"
+      ],
+      "can_run_parallel": true,
+      "stage": 2
+    },
+    "silver_dimensions_ncr": {
+      "depends_on": [
+        "bronze_ncr"
+      ],
+      "flowgroup_count": 3,
+      "action_count": 9,
+      "external_sources": [],
+      "can_run_parallel": true,
+      "stage": 2
+    },
+    "silver_dimensions_sfcc": {
+      "depends_on": [
+        "bronze_sfcc"
+      ],
+      "flowgroup_count": 3,
+      "action_count": 9,
+      "external_sources": [],
+      "can_run_parallel": true,
+      "stage": 2
+    },
+    "bronze_sap": {
+      "depends_on": [
+        "raw_ingestions_sap"
+      ],
+      "flowgroup_count": 17,
+      "action_count": 78,
+      "external_sources": [],
+      "can_run_parallel": true,
+      "stage": 1
+    },
+    "bronze_ncr": {
+      "depends_on": [
+        "raw_ingestions_ncr"
+      ],
+      "flowgroup_count": 7,
+      "action_count": 31,
+      "external_sources": [],
+      "can_run_parallel": true,
+      "stage": 1
+    },
+    "bronze_sfcc": {
+      "depends_on": [
+        "raw_ingestions_sfcc"
+      ],
+      "flowgroup_count": 7,
+      "action_count": 28,
+      "external_sources": [],
+      "can_run_parallel": true,
+      "stage": 1
+    }
+  },
+  "execution_stages": [
+    [
+      "raw_ingestions_sap",
+      "raw_ingestions_ncr",
+      "raw_ingestions_sfcc"
+    ],
+    [
+      "bronze_sap",
+      "bronze_ncr",
+      "bronze_sfcc"
+    ],
+    [
+      "silver_dimensions_sap",
+      "silver_facts_sap",
+      "silver_dimensions_ncr",
+      "silver_facts_ncr",
+      "silver_dimensions_sfcc",
+      "silver_facts_sfcc"
+    ]
+  ],
+  "external_sources": [
+    "bronze_sap_prd_snapshot"
+  ],
+  "circular_dependencies": [],
+  "generation_info": {
+    "generated_at": "2025-10-22T16:06:50.653365",
+    "generator": "LakehousePlumber DependencyAnalyzer",
+    "version": "1.0"
+  }
+}

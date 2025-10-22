@@ -1,0 +1,31 @@
+# Location dimension with SCD Type 2
+# Uses silver_dimension_scd2_template
+
+pipeline: silver_dimensions_ncr
+flowgroup: location_dim_TMPL005
+
+use_template: TMPL005_silver_dimension_scd2_template
+template_parameters:
+  table_name: location
+  source_system: ncr
+  source_table: bronze_ncr_location
+  primary_keys:
+    - "location_id"
+  sequence_by: "last_update_dttm"
+  type_casting:
+    location_id: "BIGINT"
+    location_type: "STRING"
+    name: "STRING"
+    address_line1: "STRING"
+    address_line2: "STRING"
+    city: "STRING"
+    state: "STRING"
+    zip_code: "STRING"
+    country: "STRING"
+    status: "STRING"
+    last_update_dttm: "TIMESTAMP"
+  track_history_except:
+    - "_processing_timestamp"
+    - "_source_file_path"
+    - "last_update_dttm"
+

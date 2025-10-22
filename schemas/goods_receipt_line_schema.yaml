@@ -1,0 +1,40 @@
+name: goods_receipt_line
+version: "1.0"
+description: "Goods receipt line (transactional fact) - as per Database_schema.md"
+
+columns:
+  - name: grn_line_id
+    type: BIGINT
+    nullable: false
+    comment: "Goods receipt line ID (primary key)"
+  - name: grn_id
+    type: BIGINT
+    nullable: false
+    comment: "Goods receipt FK"
+  - name: po_line_id
+    type: BIGINT
+    nullable: false
+    comment: "Purchase order line FK"
+  - name: product_id
+    type: BIGINT
+    nullable: false
+    comment: "Product FK"
+  - name: received_qty
+    type: BIGINT
+    nullable: false
+    comment: "Received quantity"
+  - name: rejected_qty
+    type: BIGINT
+    nullable: false
+    comment: "Rejected quantity (default: 0)"
+  - name: reason_code_id
+    type: BIGINT
+    nullable: true
+    comment: "Reason code FK (nullable)"
+  - name: last_update_dttm
+    type: TIMESTAMP
+    nullable: false
+    comment: "Last update timestamp"
+
+primary_key: [grn_line_id]
+

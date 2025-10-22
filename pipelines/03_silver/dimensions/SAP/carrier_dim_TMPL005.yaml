@@ -1,0 +1,25 @@
+# Carrier dimension with SCD Type 2
+# Uses silver_dimension_scd2_template
+
+pipeline: silver_dimensions_sap
+flowgroup: carrier_dim_TMPL005
+
+use_template: TMPL005_silver_dimension_scd2_template
+template_parameters:
+  table_name: carrier
+  source_system: sap
+  source_table: bronze_sap_carrier
+  primary_keys:
+    - "carrier_id"
+  sequence_by: "last_update_dttm"
+  type_casting:
+    carrier_id: "BIGINT"
+    name: "STRING"
+    contact_info: "STRING"
+    status: "STRING"
+    last_update_dttm: "TIMESTAMP"
+  track_history_except:
+    - "_processing_timestamp"
+    - "_source_file_path"
+    - "last_update_dttm"
+

@@ -1,0 +1,8 @@
+pipeline: bronze_sfcc
+flowgroup: bronze_sfcc_sls_ord_ln_TMPL004
+
+use_template: TMPL004_raw_to_bronze_standard_template
+template_parameters:
+  raw_table_name: raw_sfcc_sls_ord_ln
+  bronze_table_name: bronze_sfcc_sls_ord_ln
+

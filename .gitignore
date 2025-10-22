@@ -1,0 +1,17 @@
+.cursor/
+# databricks.yml
+generated/
+.lhp_state.json
+.lhp/logs/
+.clinerules/byterover-rules.md
+.kilocode/rules/byterover-rules.md
+.roo/rules/byterover-rules.md
+.windsurf/rules/byterover-rules.md
+.cursor/rules/byterover-rules.mdc
+.kiro/steering/byterover-rules.md
+.qoder/rules/byterover-rules.md
+.augment/rules/byterover-rules.md
+CLAUDE.md
+.vscode/
+presets/bronze_layer.yaml.tmpl
+databricks.yml

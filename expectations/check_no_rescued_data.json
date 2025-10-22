@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "table": "{{ bronze_table_name }}",
+  "expectations": [
+    {
+      "name": "no_rescued_data",
+      "expression": "_rescued_data IS NULL",
+      "failureAction": "warn"
+    }
+  ]
+} 

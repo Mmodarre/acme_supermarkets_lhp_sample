@@ -1,0 +1,52 @@
+name: customer_address
+version: "1.0"
+description: "Customer address dimension - as per Database_schema.md"
+
+columns:
+  - name: address_id
+    type: BIGINT
+    nullable: false
+    comment: "Address ID (primary key)"
+  - name: customer_id
+    type: BIGINT
+    nullable: false
+    comment: "Customer FK"
+  - name: line1
+    type: STRING
+    nullable: false
+    comment: "Address line 1"
+  - name: line2
+    type: STRING
+    nullable: true
+    comment: "Address line 2"
+  - name: city
+    type: STRING
+    nullable: false
+    comment: "City"
+  - name: state
+    type: STRING
+    nullable: false
+    comment: "State/Province"
+  - name: postcode
+    type: STRING
+    nullable: false
+    comment: "Postal/ZIP code"
+  - name: country
+    type: STRING
+    nullable: false
+    comment: "Country"
+  - name: is_default_shipping
+    type: BOOLEAN
+    nullable: false
+    comment: "Default shipping address flag (default: false)"
+  - name: is_default_billing
+    type: BOOLEAN
+    nullable: false
+    comment: "Default billing address flag (default: false)"
+  - name: last_update_dttm
+    type: TIMESTAMP
+    nullable: false
+    comment: "Last update timestamp for CDC sequencing"
+
+primary_key: [address_id]
+

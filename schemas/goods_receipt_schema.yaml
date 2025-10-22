@@ -1,0 +1,32 @@
+name: goods_receipt
+version: "1.0"
+description: "Goods receipt header (accumulating snapshot fact) - as per Database_schema.md"
+
+columns:
+  - name: grn_id
+    type: BIGINT
+    nullable: false
+    comment: "Goods receipt note ID (primary key)"
+  - name: po_id
+    type: BIGINT
+    nullable: false
+    comment: "Purchase order FK"
+  - name: receipt_date
+    type: DATE
+    nullable: false
+    comment: "Receipt date"
+  - name: received_by_user_id
+    type: BIGINT
+    nullable: false
+    comment: "User who received the goods (FK)"
+  - name: status
+    type: STRING
+    nullable: false
+    comment: "Goods receipt status (default: active)"
+  - name: last_update_dttm
+    type: TIMESTAMP
+    nullable: false
+    comment: "Last update timestamp for CDC sequencing"
+
+primary_key: [grn_id]
+

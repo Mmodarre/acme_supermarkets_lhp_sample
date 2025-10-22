@@ -1,0 +1,28 @@
+name: reason_code
+version: "1.0"
+description: "Reason code dimension - as per Database_schema.md"
+
+columns:
+  - name: reason_code_id
+    type: BIGINT
+    nullable: false
+    comment: "Reason code ID (primary key)"
+  - name: category
+    type: STRING
+    nullable: false
+    comment: "Reason category (adjustment, return, damage)"
+  - name: code
+    type: STRING
+    nullable: false
+    comment: "Reason code"
+  - name: description
+    type: STRING
+    nullable: false
+    comment: "Reason description"
+  - name: last_update_dttm
+    type: TIMESTAMP
+    nullable: false
+    comment: "Last update timestamp for CDC sequencing"
+
+primary_key: [reason_code_id]
+

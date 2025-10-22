@@ -1,0 +1,47 @@
+name: purchase_order_header
+version: "1.0"
+description: "Purchase order header schema for silver layer"
+
+columns:
+  - name: purchase_order_id
+    type: BIGINT
+    nullable: false
+    comment: "Purchase order ID (primary key)"
+    
+  - name: supplier_id
+    type: BIGINT
+    nullable: false
+    comment: "Supplier/Vendor ID"
+    
+  - name: order_date
+    type: DATE
+    nullable: false
+    comment: "Order date"
+    
+  - name: expected_date
+    type: DATE
+    nullable: true
+    comment: "Expected delivery date"
+    
+  - name: currency
+    type: STRING
+    nullable: false
+    comment: "Currency code (USD, CAD, etc.)"
+    
+  - name: destination_location_id
+    type: BIGINT
+    nullable: false
+    comment: "Ship-to location ID"
+    
+  - name: status
+    type: STRING
+    nullable: false
+    comment: "Order status (pending, approved, shipped, received)"
+    
+  - name: last_update_dttm
+    type: TIMESTAMP
+    nullable: false
+    comment: "Last update timestamp - used for CDC sequencing"
+
+primary_key: [purchase_order_id]
+

@@ -1,0 +1,106 @@
+pipeline: bronze_sap
+flowgroup: xfer_ord_bronze
+
+actions:
+  - name: xfer_ord_raw_load
+    type: load
+    readMode: stream
+    source:
+      type: delta
+      database: "{catalog}.{raw_schema}"
+      table: raw_sap_xfer_ord
+    target: vw_xfer_ord_raw
+    description: "Load warehouse transfers from raw schema"
+  
+  - name: xfer_ord_header_sql_from_json
+    type: transform
+    transform_type: sql
+    source: vw_xfer_ord_raw
+    target: vw_xfer_ord_hdr_bronze_exploded
+    operational_metadata: ["_processing_timestamp"]
+    sql: |
+          SELECT jsonCol.* except (lines,shipments,`_rescued_data`),
+          _source_file_path
+          FROM stream(vw_xfer_ord_raw)
+
+  - name: xfer_ord_header_bronze_write
+    type: write
+    write_target:
+      type: streaming_table
+      database: "{catalog}.{bronze_schema}"
+      table: "brz_sap_xfer_ord_hdr"
+    source: vw_xfer_ord_hdr_bronze_exploded
+    description: "Write transfer order header to bronze schema"
+    
+  - name: xfer_ord_lines_sql_from_json
+    type: transform
+    transform_type: sql
+    source: vw_xfer_ord_raw
+    target: vw_xfer_ord_ln_bronze_exploded
+    operational_metadata: ["_processing_timestamp"]
+    sql: |
+          SELECT jsonCol.transfer_id,
+          lines.*,
+          _source_file_path
+          FROM stream(vw_xfer_ord_raw)
+          LATERAL VIEW explode(jsonCol.lines) AS lines
+
+  - name: xfer_ord_lines_bronze_write
+    type: write
+    write_target:
+      type: streaming_table
+      database: "{catalog}.{bronze_schema}"
+      table: "brz_sap_xfer_ord_ln"
+    source: vw_xfer_ord_ln_bronze_exploded
+    description: "Write transfer order lines to bronze schema"
+    
+  - name: whse_shpmt_header_sql_from_json
+    type: transform
+    transform_type: sql
+    source: vw_xfer_ord_raw
+    target: vw_whse_shpmt_hdr_bronze_exploded
+    operational_metadata: ["_processing_timestamp"]
+    sql: |
+          SELECT 
+          jsonCol.transfer_id,
+          shipments.* except(lines),
+          _source_file_path
+          FROM stream(vw_xfer_ord_raw)
+          LATERAL VIEW explode(jsonCol.shipments) AS shipments
+
+
+  - name: whse_shpmt_header_bronze_write
+    type: write
+    write_target:
+      type: streaming_table
+      database: "{catalog}.{bronze_schema}"
+      table: "brz_sap_whse_shpmt_hdr"
+    source: vw_whse_shpmt_hdr_bronze_exploded
+    description: "Write warehouse shipment header to bronze schema"
+  
+
+  - name: whse_shpmt_lines_sql_from_json
+    type: transform
+    transform_type: sql
+    source: vw_xfer_ord_raw
+    target: vw_whse_shpmt_ln_bronze_exploded
+    operational_metadata: ["_processing_timestamp"]
+    sql: |
+          SELECT 
+          jsonCol.transfer_id,
+          shipments.shipment_id,
+          lines.*,
+          _source_file_path
+          FROM stream(vw_xfer_ord_raw)
+          LATERAL VIEW explode(jsonCol.shipments) AS shipments
+          LATERAL VIEW explode(shipments.lines) as lines
+
+  - name: whse_shpmt_lines_bronze_write
+    type: write
+    write_target:
+      type: streaming_table
+      database: "{catalog}.{bronze_schema}"
+      table: "brz_sap_whse_shpmt_ln"
+    source: vw_whse_shpmt_ln_bronze_exploded
+    description: "Write warehouse shipment lines to bronze schema"
+

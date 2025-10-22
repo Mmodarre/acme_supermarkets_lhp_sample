@@ -1,0 +1,56 @@
+name: shipment_header
+version: "1.0"
+description: "Shipment header (accumulating snapshot fact) - as per Database_schema.md"
+
+columns:
+  - name: shipment_id
+    type: BIGINT
+    nullable: false
+    comment: "Shipment ID (primary key)"
+  - name: order_id
+    type: BIGINT
+    nullable: false
+    comment: "Sales order FK"
+  - name: warehouse_id
+    type: BIGINT
+    nullable: false
+    comment: "Warehouse FK"
+  - name: carrier_id
+    type: BIGINT
+    nullable: false
+    comment: "Carrier FK"
+  - name: tracking_number
+    type: STRING
+    nullable: false
+    comment: "Tracking number"
+  - name: ship_date
+    type: DATE
+    nullable: false
+    comment: "Ship date"
+  - name: expected_delivery_date
+    type: DATE
+    nullable: true
+    comment: "Expected delivery date"
+  - name: actual_delivery_date
+    type: DATE
+    nullable: true
+    comment: "Actual delivery date"
+  - name: status
+    type: STRING
+    nullable: false
+    comment: "Shipment status (default: active)"
+  - name: created_at
+    type: TIMESTAMP
+    nullable: false
+    comment: "Record creation timestamp"
+  - name: updated_at
+    type: TIMESTAMP
+    nullable: false
+    comment: "Record last update timestamp"
+  - name: last_update_dttm
+    type: TIMESTAMP
+    nullable: false
+    comment: "Last update timestamp for CDC sequencing"
+
+primary_key: [shipment_id]
+

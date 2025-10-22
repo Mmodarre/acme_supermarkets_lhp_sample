@@ -1,0 +1,48 @@
+name: purchase_order_line
+version: "1.0"
+description: "Purchase order line (transactional fact) - as per Database_schema.md"
+
+columns:
+  - name: po_line_id
+    type: BIGINT
+    nullable: false
+    comment: "Purchase order line ID (primary key)"
+  - name: po_id
+    type: BIGINT
+    nullable: false
+    comment: "Purchase order FK"
+  - name: product_id
+    type: BIGINT
+    nullable: false
+    comment: "Product FK"
+  - name: ordered_qty
+    type: BIGINT
+    nullable: false
+    comment: "Ordered quantity"
+  - name: uom_id
+    type: BIGINT
+    nullable: false
+    comment: "Unit of measure FK"
+  - name: unit_price
+    type: DECIMAL(10,2)
+    nullable: false
+    comment: "Unit price"
+  - name: tax_rate
+    type: DECIMAL(5,2)
+    nullable: false
+    comment: "Tax rate"
+  - name: due_date
+    type: DATE
+    nullable: true
+    comment: "Due date (nullable)"
+  - name: status
+    type: STRING
+    nullable: false
+    comment: "Line status (default: active)"
+  - name: last_update_dttm
+    type: TIMESTAMP
+    nullable: false
+    comment: "Last update timestamp"
+
+primary_key: [po_line_id]
+

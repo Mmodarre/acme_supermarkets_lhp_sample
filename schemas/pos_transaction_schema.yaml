@@ -1,0 +1,60 @@
+name: pos_transaction
+version: "1.0"
+description: "POS transaction header (transactional fact) - as per Database_schema.md"
+
+columns:
+  - name: txn_id
+    type: BIGINT
+    nullable: false
+    comment: "Transaction ID (primary key)"
+  - name: store_id
+    type: BIGINT
+    nullable: false
+    comment: "Store location FK"
+  - name: terminal_id
+    type: STRING
+    nullable: false
+    comment: "Terminal ID"
+  - name: cashier_user_id
+    type: BIGINT
+    nullable: false
+    comment: "Cashier user FK"
+  - name: txn_datetime
+    type: TIMESTAMP
+    nullable: false
+    comment: "Transaction timestamp"
+  - name: customer_id
+    type: BIGINT
+    nullable: true
+    comment: "Customer FK (nullable)"
+  - name: status
+    type: STRING
+    nullable: false
+    comment: "Transaction status"
+  - name: total_gross
+    type: DECIMAL(10,2)
+    nullable: false
+    comment: "Gross total amount"
+  - name: total_tax
+    type: DECIMAL(10,2)
+    nullable: false
+    comment: "Total tax amount"
+  - name: total_discount
+    type: DECIMAL(10,2)
+    nullable: false
+    comment: "Total discount amount"
+  - name: total_net
+    type: DECIMAL(10,2)
+    nullable: false
+    comment: "Net total amount"
+  - name: payment_status
+    type: STRING
+    nullable: false
+    comment: "Payment status"
+  - name: last_update_dttm
+    type: TIMESTAMP
+    nullable: false
+    comment: "Last update timestamp"
+
+primary_key: [txn_id]
+

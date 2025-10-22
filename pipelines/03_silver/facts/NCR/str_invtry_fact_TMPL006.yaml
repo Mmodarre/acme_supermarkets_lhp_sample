@@ -1,0 +1,30 @@
+# Store Inventory Fact - SCD Type 2 for tracking inventory level changes
+# Tracks on_hand_qty, reserved_qty, safety_stock_qty, reorder_point changes over time
+# Uses silver_fact_scd2_template
+
+pipeline: silver_facts_ncr
+flowgroup: str_invtry_fact_TMPL006
+
+use_template: TMPL006_silver_fact_scd2_template
+template_parameters:
+  table_name: str_invtry
+  source_system: ncr
+  source_table: bronze_ncr_str_invtry
+  primary_keys:
+    - "store_inventory_id"
+  sequence_by: "last_update_dttm"
+  type_casting:
+    store_inventory_id: "BIGINT"
+    store_id: "BIGINT"
+    product_id: "BIGINT"
+    on_hand_qty: "BIGINT"
+    reserved_qty: "BIGINT"
+    safety_stock_qty: "BIGINT"
+    reorder_point: "BIGINT"
+    last_update_dttm: "TIMESTAMP"
+    _processing_timestamp: "TIMESTAMP"
+  track_history_except:
+    - "_processing_timestamp"
+    - "last_update_dttm"
+    - "_source_file_path"
+

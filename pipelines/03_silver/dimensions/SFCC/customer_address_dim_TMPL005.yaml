@@ -1,0 +1,31 @@
+# Customer address dimension with SCD Type 2
+# Uses silver_dimension_scd2_template
+
+pipeline: silver_dimensions_sfcc
+flowgroup: customer_address_dim_TMPL005
+
+use_template: TMPL005_silver_dimension_scd2_template
+template_parameters:
+  table_name: cust_addr
+  source_system: sfcc
+  source_table: bronze_sfcc_cust_addr
+  primary_keys:
+    - "address_id"
+  sequence_by: "last_update_dttm"
+  type_casting:
+    address_id: "BIGINT"
+    customer_id: "BIGINT"
+    line1: "STRING"
+    line2: "STRING"
+    city: "STRING"
+    state: "STRING"
+    postcode: "STRING"
+    country: "STRING"
+    is_default_shipping: "BOOLEAN"
+    is_default_billing: "BOOLEAN"
+    last_update_dttm: "TIMESTAMP"
+  track_history_except:
+    - "_processing_timestamp"
+    - "_source_file_path"
+    - "last_update_dttm"
+

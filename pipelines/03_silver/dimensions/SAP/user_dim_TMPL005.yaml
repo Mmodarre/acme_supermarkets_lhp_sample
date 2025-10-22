@@ -1,0 +1,31 @@
+# User dimension with SCD Type 2
+# Uses silver_dimension_scd2_template
+
+pipeline: silver_dimensions_sap
+flowgroup: user_dim_TMPL005
+
+use_template: TMPL005_silver_dimension_scd2_template
+template_parameters:
+  table_name: user
+  source_system: sap
+  source_table: bronze_sap_user
+  primary_keys:
+    - "user_id"
+  sequence_by: "last_update_dttm"
+  type_casting:
+    user_id: "BIGINT"
+    username: "STRING"
+    first_name: "STRING"
+    last_name: "STRING"
+    email: "STRING"
+    role: "STRING"
+    store_id: "BIGINT"
+    status: "STRING"
+    created_at: "TIMESTAMP"
+    updated_at: "TIMESTAMP"
+    last_update_dttm: "TIMESTAMP"
+  track_history_except:
+    - "_processing_timestamp"
+    - "_source_file_path"
+    - "last_update_dttm"
+

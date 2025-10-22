@@ -1,0 +1,25 @@
+# Payment method dimension with SCD Type 2
+# Uses silver_dimension_scd2_template
+
+pipeline: silver_dimensions_ncr
+flowgroup: payment_method_dim_TMPL005
+
+use_template: TMPL005_silver_dimension_scd2_template
+template_parameters:
+  table_name: pmt_method
+  source_system: ncr
+  source_table: bronze_ncr_pmt_method
+  primary_keys:
+    - "method_id"
+  sequence_by: "last_update_dttm"
+  type_casting:
+    method_id: "BIGINT"
+    code: "STRING"
+    name: "STRING"
+    is_active: "BOOLEAN"
+    last_update_dttm: "TIMESTAMP"
+  track_history_except:
+    - "_processing_timestamp"
+    - "_source_file_path"
+    - "last_update_dttm"
+

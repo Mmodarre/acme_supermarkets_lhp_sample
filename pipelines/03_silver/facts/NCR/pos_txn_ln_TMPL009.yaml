@@ -1,0 +1,23 @@
+# POS Transaction Line - Transactional Fact
+# Uses silver_transactional_fact_template
+
+pipeline: silver_facts_ncr
+flowgroup: pos_txn_ln_silver_TMPL009
+
+use_template: TMPL009_silver_transactional_fact_template
+template_parameters:
+  table_name: pos_txn_ln
+  source_system: ncr
+  source_table: brz_ncr_pos_txn_ln
+  type_casting:
+    txn_line_id: "BIGINT"
+    txn_id: "BIGINT"
+    line_number: "BIGINT"
+    product_id: "BIGINT"
+    qty: "BIGINT"
+    unit_price: "DECIMAL(10,2)"
+    line_discount: "DECIMAL(10,2)"
+    line_total: "DECIMAL(10,2)"
+    last_update_dttm: "TIMESTAMP"
+    _processing_timestamp: "TIMESTAMP"
+

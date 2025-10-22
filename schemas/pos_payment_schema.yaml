@@ -1,0 +1,44 @@
+name: pos_payment
+version: "1.0"
+description: "POS payment (transactional fact) - as per Database_schema.md"
+
+columns:
+  - name: payment_id
+    type: BIGINT
+    nullable: false
+    comment: "Payment ID (primary key)"
+  - name: txn_id
+    type: BIGINT
+    nullable: false
+    comment: "Transaction FK"
+  - name: method_id
+    type: BIGINT
+    nullable: false
+    comment: "Payment method FK"
+  - name: amount
+    type: DECIMAL(10,2)
+    nullable: false
+    comment: "Payment amount"
+  - name: auth_code
+    type: STRING
+    nullable: true
+    comment: "Authorization code (nullable)"
+  - name: provider_ref
+    type: STRING
+    nullable: true
+    comment: "Payment provider reference (nullable)"
+  - name: captured_at
+    type: TIMESTAMP
+    nullable: false
+    comment: "Payment captured timestamp"
+  - name: payment_details
+    type: STRING
+    nullable: true
+    comment: "Payment details JSON (nullable)"
+  - name: last_update_dttm
+    type: TIMESTAMP
+    nullable: false
+    comment: "Last update timestamp"
+
+primary_key: [payment_id]
+

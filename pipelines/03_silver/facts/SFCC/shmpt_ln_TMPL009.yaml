@@ -1,0 +1,20 @@
+# Shipment Line - Transactional Fact
+# Uses silver_transactional_fact_template
+
+pipeline: silver_facts_sfcc
+flowgroup: shmpt_ln_silver_TMPL009
+
+use_template: TMPL009_silver_transactional_fact_template
+template_parameters:
+  table_name: shmpt_ln
+  source_system: sfcc
+  source_table: bronze_sfcc_shmpt_ln
+  type_casting:
+    shipment_line_id: "BIGINT"
+    shipment_id: "BIGINT"
+    order_line_id: "BIGINT"
+    product_id: "BIGINT"
+    qty: "BIGINT"
+    last_update_dttm: "TIMESTAMP"
+    _processing_timestamp: "TIMESTAMP"
+

@@ -1,0 +1,39 @@
+# Purchase Order Header - Accumulating Snapshot Fact with Dual Tables
+# Uses silver_accumulating_fact_template
+
+pipeline: silver_facts_sap
+flowgroup: prch_ord_hdr_silver_TMPL007
+
+use_template: TMPL007_silver_accumulating_fact_template
+template_parameters:
+  table_name: prch_ord_hdr
+  source_system: sap
+  source_table: brz_sap_prch_ord_hdr
+  primary_keys:
+    - "po_id"
+  type_casting:
+    po_id: "BIGINT"
+    vendor_id: "BIGINT"
+    ship_to_location_id: "BIGINT"
+    order_date: "DATE"
+    expected_date: "DATE"
+    currency: "STRING"
+    status: "STRING"
+    last_update_dttm: "TIMESTAMP"
+    _processing_timestamp: "TIMESTAMP"
+  track_history_except:
+    - "_processing_timestamp"
+    - "_source_file_path"
+    - "last_update_dttm"
+  status_column: status
+  status_values:
+    - "pending"
+    - "received"
+  sequence_by: "last_update_dttm"
+  group_by_columns:
+    - "po_id"
+  additional_columns:
+    - "currency"
+    - "order_date"
+    - "expected_date"
+

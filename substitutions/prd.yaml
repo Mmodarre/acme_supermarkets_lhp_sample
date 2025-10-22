@@ -1,0 +1,29 @@
+# ⚠️ IMPORTANT: Environment name 'dev' must match databricks.yml target name 'dev'
+# This file: substitutions/prd.yaml → databricks.yml target: prd
+# LHP generates resources under: resources/lhp/
+
+# Development environment substitutions
+# Token substitutions
+
+# TODO: change to the actual catalog, schemas, and landing path
+# TODO: Add any other substitution variables you need here
+
+prd:
+  env: prd
+  catalog: acme_supermarkets_prd
+  raw_schema: edw_raw
+  bronze_schema: edw_bronze
+  silver_schema: edw_silver
+  gold_schema: edw_gold
+  landing_path: /Volumes/acme_supermarkets_prd/edw_raw/landing 
+
+
+# Secret configuration
+# TODO: change to the actual secret scopes
+# These secrets need to be created in the Databricks workspace and accessible using dbutils.secrets.get(scope, key)
+# secrets:
+#   default_scope: dev-secrets
+#   scopes:
+#     database: dev-db-secrets
+#     storage: dev-storage-secrets
+#     api: dev-api-secrets 

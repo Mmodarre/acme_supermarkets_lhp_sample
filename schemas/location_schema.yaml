@@ -1,0 +1,52 @@
+name: location
+version: "1.0"
+description: "Location dimension (stores and warehouses) - as per Database_schema.md"
+
+columns:
+  - name: location_id
+    type: BIGINT
+    nullable: false
+    comment: "Location ID (primary key)"
+  - name: location_type
+    type: STRING
+    nullable: false
+    comment: "Location type (store, warehouse)"
+  - name: name
+    type: STRING
+    nullable: false
+    comment: "Location name"
+  - name: address_line1
+    type: STRING
+    nullable: true
+    comment: "Address line 1"
+  - name: address_line2
+    type: STRING
+    nullable: true
+    comment: "Address line 2"
+  - name: city
+    type: STRING
+    nullable: true
+    comment: "City"
+  - name: state
+    type: STRING
+    nullable: true
+    comment: "State/Province"
+  - name: zip_code
+    type: STRING
+    nullable: true
+    comment: "ZIP/Postal code"
+  - name: country
+    type: STRING
+    nullable: true
+    comment: "Country"
+  - name: status
+    type: STRING
+    nullable: false
+    comment: "Location status (default: active)"
+  - name: last_update_dttm
+    type: TIMESTAMP
+    nullable: false
+    comment: "Last update timestamp for CDC sequencing"
+
+primary_key: [location_id]
+

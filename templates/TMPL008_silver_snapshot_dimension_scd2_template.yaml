@@ -1,0 +1,65 @@
+name: TMPL008_silver_snapshot_dimension_scd2_template
+version: "1.0"
+description: "Template for silver layer dimensions with snapshot CDC and SCD Type 2 using Python function for append-only bronze tables"
+
+parameters:
+  - name: table_name
+    type: string
+    required: true
+    description: "Short name for the dimension (e.g., 'prd', 'cust')"
+  
+  - name: source_system
+    type: string
+    required: true
+    description: "Source system prefix (e.g., 'sfcc', 'sap', 'ncr')"
+  
+  - name: source_function
+    type: object
+    required: true
+    description: "Python function reference for snapshot processing"
+  
+  - name: primary_keys
+    type: array
+    required: true
+    description: "Primary key columns for the dimension"
+  
+  - name: type_casting
+    type: object
+    required: true
+    description: "Column name to data type mapping for schema transform"
+  
+  - name: track_history_except
+    type: array
+    required: false
+    default:
+      - "_processing_timestamp"
+      - "_source_file_path"
+      - "created_at"
+      - "updated_at"
+      - "last_update_dttm"
+    description: "Columns to exclude from history tracking"
+
+actions:
+  # Step 1: Apply Snapshot CDC with SCD Type 2 using Python function
+  # The function handles loading from bronze, extracting snapshots, and applying schema transforms
+  - name: "write_{{ table_name }}_dim_snapshot_scd2"
+    type: write
+    write_target:
+      type: streaming_table
+      database: "{catalog}.{silver_schema}"
+      table: "dim_{{ source_system }}_{{ table_name }}"
+      mode: snapshot_cdc
+      snapshot_cdc_config:
+        source_function:
+          file: "{{ source_function.file }}"
+          function: "{{ source_function.function }}"
+        keys: "{{ primary_keys }}"
+        stored_as_scd_type: 2
+        track_history_except_column_list: "{{ track_history_except }}"
+      table_properties:
+        delta.enableChangeDataFeed: "true"
+        table.type: "dimension"
+        scd.type: "2"
+    description: "{{ table_name }} dimension with Snapshot CDC and SCD Type 2 - processes snapshots incrementally using Python function"
+
+

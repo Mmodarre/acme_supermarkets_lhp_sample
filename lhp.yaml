@@ -1,0 +1,46 @@
+# LakehousePlumber Project Configuration
+name: acme_supermarkets_data_pipeline
+version: "1.0"
+description: "Acme Supermarkets Data Pipeline"
+author: "Mehdi Modarressi"
+created_date: "2025-10-15T13:34:54.907474"
+required_lhp_version: ">=0.5.0,<0.7.0"
+
+# Optional: Enforce LakehousePlumber version requirements
+# Ensures consistent code generation across development and CI environments
+# required_lhp_version: ">=0.4.1,<0.5.0"  # Allow patch updates within 0.4.x
+# required_lhp_version: "~=0.4.1"          # Equivalent to >=0.4.1,<0.5.0
+# required_lhp_version: "==0.4.1"          # Exact version pin
+
+# Optional: Include patterns to filter which YAML files to process
+# By default, all YAML files in the pipelines directory are processed
+# Uncomment and customize the patterns below to filter files
+# include:
+#   - "*.yaml"                    # All YAML files
+#   - "bronze_*.yaml"             # Files starting with "bronze_"
+#   - "silver/**/*.yaml"          # All YAML files in silver subdirectories
+#   - "gold/dimension_*.yaml"     # Dimension files in gold directory
+#   - "!**/temp_*.yaml"           # Exclude temporary files (prefix with !) 
+
+
+## Optional: Add operational metadata columns to the generated pipelines
+## These can be used to track the source of the data and the processing of the data
+operational_metadata:
+  columns:
+  
+    _source_file_path:
+      expression: "F.col('_metadata.file_path')"
+      description: "File paths"
+      applies_to: ["view"]
+    
+    _processing_timestamp:
+      expression: "F.current_timestamp()"
+      description: "When the record was processed by the pipeline"
+      applies_to: ["streaming_table", "materialized_view", "view"]
+
+    _source_file_name:
+      expression: "F.col('_metadata.file_name')"
+      description: "Name of the input file along with its extension"
+      applies_to: ["view"]
+      
+

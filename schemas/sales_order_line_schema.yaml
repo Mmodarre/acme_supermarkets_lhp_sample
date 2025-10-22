@@ -1,0 +1,64 @@
+name: sales_order_line
+version: "1.0"
+description: "Sales order line (transactional fact) - as per Database_schema.md"
+
+columns:
+  - name: line_id
+    type: BIGINT
+    nullable: false
+    comment: "Order line ID (primary key)"
+  - name: order_id
+    type: BIGINT
+    nullable: false
+    comment: "Sales order FK"
+  - name: line_number
+    type: BIGINT
+    nullable: false
+    comment: "Line number"
+  - name: product_id
+    type: BIGINT
+    nullable: false
+    comment: "Product FK"
+  - name: qty
+    type: BIGINT
+    nullable: false
+    comment: "Quantity"
+  - name: unit_price
+    type: DECIMAL(10,2)
+    nullable: false
+    comment: "Unit price"
+  - name: discount_amount
+    type: DECIMAL(10,2)
+    nullable: false
+    comment: "Discount amount (default: 0)"
+  - name: tax_amount
+    type: DECIMAL(10,2)
+    nullable: false
+    comment: "Tax amount"
+  - name: line_total
+    type: DECIMAL(10,2)
+    nullable: false
+    comment: "Line total"
+  - name: status
+    type: STRING
+    nullable: false
+    comment: "Line status (default: pending)"
+  - name: allocated_qty
+    type: BIGINT
+    nullable: false
+    comment: "Allocated quantity (default: 0)"
+  - name: shipped_qty
+    type: BIGINT
+    nullable: false
+    comment: "Shipped quantity (default: 0)"
+  - name: cancelled_qty
+    type: BIGINT
+    nullable: false
+    comment: "Cancelled quantity (default: 0)"
+  - name: last_update_dttm
+    type: TIMESTAMP
+    nullable: false
+    comment: "Last update timestamp"
+
+primary_key: [line_id]
+

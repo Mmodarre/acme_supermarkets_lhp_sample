@@ -1,0 +1,40 @@
+name: category
+version: "1.0"
+description: "Category dimension - as per Database_schema.md"
+
+columns:
+  - name: category_id
+    type: BIGINT
+    nullable: false
+    comment: "Category ID (primary key)"
+  - name: name
+    type: STRING
+    nullable: false
+    comment: "Category name"
+  - name: parent_category_id
+    type: BIGINT
+    nullable: true
+    comment: "Parent category ID (self-referential FK)"
+  - name: level
+    type: BIGINT
+    nullable: false
+    comment: "Category hierarchy level"
+  - name: path
+    type: STRING
+    nullable: true
+    comment: "Category path in hierarchy"
+  - name: created_at
+    type: TIMESTAMP
+    nullable: false
+    comment: "Record creation timestamp"
+  - name: updated_at
+    type: TIMESTAMP
+    nullable: false
+    comment: "Record last update timestamp"
+  - name: last_update_dttm
+    type: TIMESTAMP
+    nullable: false
+    comment: "Last update timestamp for CDC sequencing"
+
+primary_key: [category_id]
+

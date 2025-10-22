@@ -1,0 +1,32 @@
+name: warehouse_shipment
+version: "1.0"
+description: "Warehouse shipment header (accumulating snapshot fact) - as per Database_schema.md"
+
+columns:
+  - name: shipment_id
+    type: BIGINT
+    nullable: false
+    comment: "Warehouse shipment ID (primary key)"
+  - name: warehouse_id
+    type: BIGINT
+    nullable: false
+    comment: "Warehouse FK"
+  - name: transfer_id
+    type: BIGINT
+    nullable: true
+    comment: "Transfer order FK (nullable)"
+  - name: shipped_at
+    type: TIMESTAMP
+    nullable: false
+    comment: "Shipment timestamp"
+  - name: status
+    type: STRING
+    nullable: false
+    comment: "Shipment status (default: active)"
+  - name: last_update_dttm
+    type: TIMESTAMP
+    nullable: false
+    comment: "Last update timestamp for CDC sequencing"
+
+primary_key: [shipment_id]
+

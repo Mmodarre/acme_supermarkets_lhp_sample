@@ -1,0 +1,79 @@
+pipeline: bronze_ncr
+flowgroup: pos_trx_header_lines_payment_bronze
+
+actions:
+  - name: pos_trx_raw_load
+    type: load
+    readMode: stream
+    source:
+      type: delta
+      database: "{catalog}.{raw_schema}"
+      table: raw_ncr_pos_txn_by_store
+    target: vw_pos_transaction_by_store
+    description: "Load pos_transaction_by_store from raw schema"
+  
+  - name: pos_trx_header
+    type: transform
+    transform_type: sql
+    source: vw_pos_transaction_by_store
+    target: vw_pos_trx_header_bronze_exploded
+    operational_metadata: ["_processing_timestamp"]
+    sql: |
+          SELECT jsoncol_values.* except (payments,transaction_lines),
+          _source_file_path
+          FROM stream(vw_pos_transaction_by_store)
+          LATERAL VIEW explode(jsonCol.value) AS jsonCol_values
+
+  - name: pos_trx_header_bronze_write
+    type: write
+    write_target:
+      type: streaming_table
+      database: "{catalog}.{bronze_schema}"
+      table: "brz_ncr_pos_txn_hdr"
+    source: vw_pos_trx_header_bronze_exploded
+    description: "Write pos_trx_header_bronze to bronze schema"
+    
+  - name: pos_trx_lines
+    type: transform
+    transform_type: sql
+    source: vw_pos_transaction_by_store
+    target: vw_pos_trx_lines_bronze_exploded
+    operational_metadata: ["_processing_timestamp"]
+    sql: |
+          SELECT jsoncol_values.txn_id, transaction_line.*,
+          _source_file_path
+          FROM stream(vw_pos_transaction_by_store)
+          LATERAL VIEW explode(jsonCol.value) AS jsonCol_values
+          LATERAL VIEW explode(jsoncol_values.transaction_lines) AS transaction_line
+
+  - name: pos_trx_lines_bronze_write
+    type: write
+    write_target:
+      type: streaming_table
+      database: "{catalog}.{bronze_schema}"
+      table: "brz_ncr_pos_txn_ln"
+    source: vw_pos_trx_lines_bronze_exploded
+    description: "Write pos_trx_header_bronze to bronze schema"
+    
+  - name: pos_trx_payments
+    type: transform
+    transform_type: sql
+    source: vw_pos_transaction_by_store
+    target: vw_pos_trx_payments_bronze_exploded
+    operational_metadata: ["_processing_timestamp"]
+    sql: |
+          SELECT jsoncol_values.txn_id, payments.*,payments.payment_details.*,
+          _source_file_path
+          FROM stream(vw_pos_transaction_by_store)
+          LATERAL VIEW explode(jsonCol.value) AS jsonCol_values
+          LATERAL VIEW explode(jsoncol_values.payments) AS payments
+
+  - name: pos_trx_payments_bronze_write
+    type: write
+    write_target:
+      type: streaming_table
+      database: "{catalog}.{bronze_schema}"
+      table: "brz_ncr_pos_txn_pmt"
+    source: vw_pos_trx_payments_bronze_exploded
+    description: "Write pos_trx_header_bronze to bronze schema"
+    

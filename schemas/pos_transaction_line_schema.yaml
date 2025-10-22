@@ -1,0 +1,48 @@
+name: pos_transaction_line
+version: "1.0"
+description: "POS transaction line (transactional fact) - as per Database_schema.md"
+
+columns:
+  - name: txn_line_id
+    type: BIGINT
+    nullable: false
+    comment: "Transaction line ID (primary key)"
+  - name: txn_id
+    type: BIGINT
+    nullable: false
+    comment: "Transaction FK"
+  - name: line_number
+    type: BIGINT
+    nullable: false
+    comment: "Line number"
+  - name: product_id
+    type: BIGINT
+    nullable: false
+    comment: "Product FK"
+  - name: qty
+    type: BIGINT
+    nullable: false
+    comment: "Quantity"
+  - name: unit_price
+    type: DECIMAL(10,2)
+    nullable: false
+    comment: "Unit price"
+  - name: line_discount
+    type: DECIMAL(10,2)
+    nullable: false
+    comment: "Line discount (default: 0)"
+  - name: tax_rate_id
+    type: BIGINT
+    nullable: true
+    comment: "Tax rate FK (nullable)"
+  - name: line_total
+    type: DECIMAL(10,2)
+    nullable: false
+    comment: "Line total amount"
+  - name: last_update_dttm
+    type: TIMESTAMP
+    nullable: false
+    comment: "Last update timestamp"
+
+primary_key: [txn_line_id]
+

@@ -1,0 +1,64 @@
+# Sales Order Header - Accumulating Snapshot Fact with Dual Tables
+# Uses silver_accumulating_fact_template
+
+pipeline: silver_facts_sfcc
+flowgroup: sls_ord_hdr_silver_TMPL007
+
+use_template: TMPL007_silver_accumulating_fact_template
+template_parameters:
+  table_name: sls_ord_hdr
+  source_system: sfcc
+  source_table: bronze_sfcc_sls_ord
+  primary_keys:
+    - "order_id"
+  type_casting:
+    order_id: "BIGINT"
+    order_number: "STRING"
+    customer_id: "BIGINT"
+    order_date: "TIMESTAMP"
+    delivery_address_id: "BIGINT"
+    shipping_method: "STRING"
+    payment_method_id: "BIGINT"
+    currency: "STRING"
+    subtotal: "DECIMAL(10,2)"
+    tax_amount: "DECIMAL(10,2)"
+    shipping_amount: "DECIMAL(10,2)"
+    discount_amount: "DECIMAL(10,2)"
+    total_amount: "DECIMAL(10,2)"
+    fulfillment_status: "STRING"
+    warehouse_id: "BIGINT"
+    estimated_delivery_date: "DATE"
+    actual_delivery_date: "DATE"
+    tracking_number: "STRING"
+    carrier_id: "BIGINT"
+    status: "STRING"
+    created_at: "TIMESTAMP"
+    updated_at: "TIMESTAMP"
+    last_update_dttm: "TIMESTAMP"
+    _processing_timestamp: "TIMESTAMP"
+  track_history_except:
+    - "_processing_timestamp"
+    - "_source_file_path"
+    - "last_update_dttm"
+  status_column: status
+  status_values:
+    - "shipped"
+    - "allocated"
+    - "completed"
+  sequence_by: "last_update_dttm"
+  group_by_columns:
+    - "order_id"
+    - "customer_id"
+  additional_columns:
+    - "order_number"
+    - "order_date"
+    - "currency"
+    - "subtotal"
+    - "tax_amount"
+    - "shipping_amount"
+    - "discount_amount"
+    - "total_amount"
+    - "fulfillment_status"
+    - "estimated_delivery_date"
+    - "actual_delivery_date"
+

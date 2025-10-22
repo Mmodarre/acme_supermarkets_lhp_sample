@@ -1,0 +1,99 @@
+pipeline: bronze_sap
+flowgroup: purchase_orders_bronze
+
+actions:
+  - name: purchase_orders_raw_load
+    type: load
+    readMode: stream
+    source:
+      type: delta
+      database: "{catalog}.{raw_schema}"
+      table: raw_sap_prch_ord
+    target: vw_purchase_orders
+    description: "Load purchase_orders from raw schema"
+  
+  - name: purchase_orders_header_sql_from_json
+    type: transform
+    transform_type: sql
+    source: vw_purchase_orders
+    target: vw_purchase_orders_bronze_exploded
+    operational_metadata: ["_processing_timestamp"]
+    sql: |
+          SELECT jsonCol.* except (receipts,lines,`_rescued_data`),
+          _source_file_path
+          FROM stream(vw_purchase_orders)
+
+  - name: purchase_orders_header_bronze_write
+    type: write
+    write_target:
+      type: streaming_table
+      database: "{catalog}.{bronze_schema}"
+      table: "brz_sap_prch_ord_hdr"
+    source: vw_purchase_orders_bronze_exploded
+    description: "Write purchase_orders_header_bronze to bronze schema"
+    
+  - name: purchase_orders_lines_sql_from_json
+    type: transform
+    transform_type: sql
+    source: vw_purchase_orders
+    target: vw_purchase_orders_lines_bronze_exploded
+    operational_metadata: ["_processing_timestamp"]
+    sql: |
+          SELECT jsoncol.po_id, lines.*,
+          _source_file_path
+          FROM stream(vw_purchase_orders)
+          LATERAL VIEW explode(jsonCol.lines) AS lines
+
+  - name: purchase_orders_lines_bronze_write
+    type: write
+    write_target:
+      type: streaming_table
+      database: "{catalog}.{bronze_schema}"
+      table: "brz_sap_prch_ord_ln"
+    source: vw_purchase_orders_lines_bronze_exploded
+    description: "Write purchase_orders_lines_bronze to bronze schema"
+    
+  - name: purchase_orders_goods_receipts_header_sql_from_json
+    type: transform
+    transform_type: sql
+    source: vw_purchase_orders
+    target: vw_purchase_orders_goods_receipts_bronze_exploded
+    operational_metadata: ["_processing_timestamp"]
+    sql: |
+          SELECT jsoncol.po_id, receipts.* except(lines),
+          _source_file_path
+          FROM stream(vw_purchase_orders)
+          LATERAL VIEW explode(jsonCol.receipts) AS receipts
+
+
+  - name: purchase_orders_goods_receipts_header_bronze_write
+    type: write
+    write_target:
+      type: streaming_table
+      database: "{catalog}.{bronze_schema}"
+      table: "brz_sap_prch_ord_rcpt_hdr"
+    source: vw_purchase_orders_goods_receipts_bronze_exploded
+    description: "Write purchase_orders_goods_receipts_header_bronze"
+  
+
+  - name: purchase_orders_goods_receipts_lines_sql_from_json
+    type: transform
+    transform_type: sql
+    source: vw_purchase_orders
+    target: vw_purchase_orders_goods_receipts_lines_bronze_exploded
+    operational_metadata: ["_processing_timestamp"]
+    sql: |
+          SELECT jsoncol.po_id, receipts.grn_id, lines.*,
+          _source_file_path
+          FROM stream(vw_purchase_orders)
+          LATERAL VIEW explode(jsonCol.receipts) AS receipts
+          LATERAL VIEW explode(receipts.lines) as lines
+
+  - name: purchase_orders_goods_receipts_lines_bronze_write
+    type: write
+    write_target:
+      type: streaming_table
+      database: "{catalog}.{bronze_schema}"
+      table: "brz_sap_prch_ord_rcpt_ln"
+    source: vw_purchase_orders_goods_receipts_lines_bronze_exploded
+    description: "Write purchase_orders_goods_receipts_lines_bronze"

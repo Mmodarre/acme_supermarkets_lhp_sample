@@ -1,0 +1,28 @@
+name: unit_of_measure
+version: "1.0"
+description: "Unit of measure dimension - as per Database_schema.md"
+
+columns:
+  - name: uom_id
+    type: BIGINT
+    nullable: false
+    comment: "Unit of measure ID (primary key)"
+  - name: code
+    type: STRING
+    nullable: false
+    comment: "UOM code (unique)"
+  - name: name
+    type: STRING
+    nullable: false
+    comment: "UOM name"
+  - name: uom_type
+    type: STRING
+    nullable: false
+    comment: "UOM type (weight, volume, count)"
+  - name: last_update_dttm
+    type: TIMESTAMP
+    nullable: false
+    comment: "Last update timestamp for CDC sequencing"
+
+primary_key: [uom_id]
+

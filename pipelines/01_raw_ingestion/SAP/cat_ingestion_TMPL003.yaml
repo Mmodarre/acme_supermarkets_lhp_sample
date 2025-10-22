@@ -1,0 +1,8 @@
+pipeline: raw_ingestions_sap
+flowgroup: sap_cat_ingestion_TMPL003
+
+use_template: TMPL003_parquet_ingestion_template
+template_parameters:
+  table_name: raw_sap_cat
+  landing_folder: category
+
