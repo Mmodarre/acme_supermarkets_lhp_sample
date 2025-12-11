@@ -1,0 +1,134 @@
+version: 0.1
+
+source: acme_supermarkets.edw_gold.fact_sales_unified
+
+joins:
+  - name: dim_sales_channel
+    source: acme_supermarkets.edw_gold.dim_sales_channel
+    'on': source.sales_channel_key = dim_sales_channel.channel_key
+  
+  - name: dim_customer
+    source: acme_supermarkets.edw_gold.dim_customer
+    'on': source.customer_key = dim_customer.customer_id
+  
+  - name: dim_product
+    source: acme_supermarkets.edw_gold.dim_product
+    'on': source.product_key = dim_product.product_id
+  
+  - name: dim_location
+    source: acme_supermarkets.edw_gold.dim_location
+    'on': source.location_key = dim_location.location_id
+  
+  - name: dim_date
+    source: acme_supermarkets.edw_gold.dim_date
+    using: [date_key]
+
+filter: dim_customer.is_current = TRUE AND dim_product.is_current = TRUE AND dim_location.is_current = TRUE
+
+dimensions:
+  - name: Sales Channel
+    expr: dim_sales_channel.channel_name
+  
+  - name: Customer Segment
+    expr: dim_customer.customer_segment
+  
+  - name: Product Category
+    expr: dim_product.category_name
+  
+  - name: Product Brand
+    expr: dim_product.brand_name
+  
+  - name: Store Location
+    expr: dim_location.location_name
+  
+  - name: Store Region
+    expr: dim_location.region
+  
+  - name: Transaction Month
+    expr: DATE_TRUNC('MONTH', dim_date.full_date)
+  
+  - name: Transaction Year
+    expr: dim_date.year
+
+measures:
+  - name: Total Revenue
+    expr: SUM(total_amount)
+  
+  - name: Total COGS
+    expr: SUM(total_cost)
+  
+  - name: Total Gross Profit
+    expr: SUM(gross_profit)
+  
+  - name: Blended Gross Margin Percentage
+    expr: SUM(gross_profit) * 100.0 / NULLIF(SUM(total_amount), 0)
+  
+  - name: POS Channel Revenue
+    expr: SUM(CASE WHEN sales_channel_key = 1 THEN total_amount ELSE 0 END)
+  
+  - name: POS Channel Gross Margin
+    expr: >
+      SUM(CASE WHEN sales_channel_key = 1 THEN gross_profit ELSE 0 END) * 100.0 / 
+      NULLIF(SUM(CASE WHEN sales_channel_key = 1 THEN total_amount ELSE 0 END), 0)
+  
+  - name: E-commerce Channel Revenue
+    expr: SUM(CASE WHEN sales_channel_key = 2 THEN total_amount ELSE 0 END)
+  
+  - name: E-commerce Channel Gross Margin
+    expr: >
+      SUM(CASE WHEN sales_channel_key = 2 THEN gross_profit ELSE 0 END) * 100.0 / 
+      NULLIF(SUM(CASE WHEN sales_channel_key = 2 THEN total_amount ELSE 0 END), 0)
+  
+  - name: Budget Segment Gross Profit
+    expr: >
+      SUM(CASE 
+        WHEN dim_customer.customer_segment = 'budget' 
+        THEN gross_profit 
+        ELSE 0 
+      END)
+  
+  - name: Premium Segment Gross Profit
+    expr: >
+      SUM(CASE 
+        WHEN dim_customer.customer_segment = 'premium' 
+        THEN gross_profit 
+        ELSE 0 
+      END)
+  
+  - name: Family Segment Gross Profit
+    expr: >
+      SUM(CASE 
+        WHEN dim_customer.customer_segment = 'family' 
+        THEN gross_profit 
+        ELSE 0 
+      END)
+  
+  - name: Convenience Segment Gross Profit
+    expr: >
+      SUM(CASE 
+        WHEN dim_customer.customer_segment = 'convenience' 
+        THEN gross_profit 
+        ELSE 0 
+      END)
+  
+  - name: Category Gross Margin
+    expr: SUM(gross_profit) * 100.0 / NULLIF(SUM(total_amount), 0)
+  
+  - name: Discount Amount
+    expr: SUM(discount_amount)
+  
+  - name: Discount Rate Percentage
+    expr: SUM(discount_amount) * 100.0 / NULLIF(SUM(total_amount + discount_amount), 0)
+  
+  - name: Average Margin per Transaction
+    expr: SUM(gross_profit) / NULLIF(COUNT(DISTINCT transaction_number), 0)
+  
+  - name: Gross Profit per Customer
+    expr: SUM(gross_profit) / NULLIF(COUNT(DISTINCT customer_key), 0)
+  
+  - name: Units Sold
+    expr: SUM(quantity_sold)
+  
+  - name: Gross Profit per Unit
+    expr: SUM(gross_profit) / NULLIF(SUM(quantity_sold), 0)
+

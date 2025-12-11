@@ -15,3 +15,8 @@ CLAUDE.md
 .vscode/
 presets/bronze_layer.yaml.tmpl
 databricks.yml
+data/export/**
+
+
+.DS_Store
+Scripts_garbage/

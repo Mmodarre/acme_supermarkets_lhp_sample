@@ -1,0 +1,35 @@
+# Shipment Header - Accumulating Snapshot Fact with Dual Tables
+# Uses silver_accumulating_fact_template
+
+pipeline: silver_facts_sfcc
+flowgroup: shmpt_hdr_silver_TMPL007
+job_name: SAP_SFCC
+
+use_template: TMPL007_silver_accumulating_fact_template
+template_parameters:
+  table_name: shmpt_hdr
+  source_system: sfcc
+  source_table: bronze_sfcc_shipment_hdr
+  primary_keys:
+    - "shipment_id"
+  schema_file: "schema_transforms/facts/SFCC/shipment_hdr_schema.yaml"
+  track_history_except:
+    - "_processing_timestamp"
+    - "_source_file_path"
+    - "last_update_dttm"
+  status_column: status
+  status_values:
+    - "in_transit"
+    - "out_for_delivery"
+    - "delivered"
+  sequence_by: "last_update_dttm"
+  group_by_columns:
+    - "shipment_id"
+    - "order_id"
+    - "fulfillment_location_id"
+  additional_columns:
+    - "carrier_id"
+    - "tracking_number"
+    - "ship_date"
+    - "expected_delivery_date"
+    - "actual_delivery_date"

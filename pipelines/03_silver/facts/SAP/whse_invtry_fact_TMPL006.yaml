@@ -1,0 +1,24 @@
+# Warehouse Inventory Fact - SCD Type 2 for tracking inventory level changes
+# Tracks on_hand_qty, reserved_qty changes over time
+# Uses silver_fact_scd2_template
+
+pipeline: silver_facts_sap
+flowgroup: whse_invtry_fact_TMPL006
+job_name: SAP_SFCC
+
+use_template: TMPL006_silver_fact_scd2_template
+template_parameters:
+  table_name: whse_invtry
+  source_system: sap
+  source_table: bronze_sap_whse_invtry
+  primary_keys:
+    - "wh_inventory_id"
+  sequence_by: "last_update_dttm"
+  schema_file: "schema_transforms/facts/SAP/whse_invtry_schema.yaml"
+  track_history_except:
+    - "_processing_timestamp"
+    - "last_update_dttm"
+    - "_source_file_path"
+
+
+

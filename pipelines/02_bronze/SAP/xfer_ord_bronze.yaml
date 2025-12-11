@@ -1,5 +1,6 @@
 pipeline: bronze_sap
 flowgroup: xfer_ord_bronze
+job_name: SAP_SFCC
 
 actions:
   - name: xfer_ord_raw_load

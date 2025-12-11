@@ -1,0 +1,123 @@
+version: 0.1
+
+source: acme_supermarkets.edw_gold.fact_sales_unified
+
+joins:
+  - name: dim_location
+    source: acme_supermarkets.edw_gold.dim_location
+    'on': source.location_key = dim_location.location_id
+  
+  - name: dim_employee
+    source: acme_supermarkets.edw_gold.dim_employee
+    'on': source.employee_key = dim_employee.employee_id
+  
+  - name: dim_date
+    source: acme_supermarkets.edw_gold.dim_date
+    using: [date_key]
+  
+  - name: dim_sales_channel
+    source: acme_supermarkets.edw_gold.dim_sales_channel
+    'on': source.sales_channel_key = dim_sales_channel.channel_key
+
+filter: dim_location.is_current = TRUE AND dim_employee.is_current = TRUE
+
+dimensions:
+  - name: Store Location
+    expr: dim_location.location_name
+  
+  - name: Store ID
+    expr: dim_location.location_id
+  
+  - name: Store Type
+    expr: dim_location.location_type
+  
+  - name: Store Region
+    expr: dim_location.region
+  
+  - name: Store Sub-Region
+    expr: dim_location.sub_region
+  
+  - name: Store City
+    expr: dim_location.city
+  
+  - name: Store State
+    expr: dim_location.state
+  
+  - name: Store Country
+    expr: dim_location.country
+  
+  - name: Transaction Month
+    expr: DATE_TRUNC('MONTH', dim_date.full_date)
+  
+  - name: Transaction Year
+    expr: dim_date.year
+  
+  - name: Employee Name
+    expr: dim_employee.full_name
+  
+  - name: Employee Role
+    expr: dim_employee.employee_role
+
+measures:
+  - name: Store Revenue
+    expr: SUM(total_amount)
+  
+  - name: Store Gross Profit
+    expr: SUM(gross_profit)
+  
+  - name: Store Transaction Count
+    expr: COUNT(DISTINCT transaction_number)
+  
+  - name: Store Employee Count
+    expr: COUNT(DISTINCT employee_key)
+  
+  - name: Revenue per Employee
+    expr: SUM(total_amount) / NULLIF(COUNT(DISTINCT employee_key), 0)
+  
+  - name: Store Productivity Index
+    expr: >
+      SUM(total_amount) / 
+      NULLIF(COUNT(DISTINCT employee_key) * COUNT(DISTINCT dim_date.full_date), 0)
+  
+  - name: West Region Revenue
+    expr: SUM(CASE WHEN dim_location.region = 'West' THEN total_amount ELSE 0 END)
+  
+  - name: West Region Market Share
+    expr: >
+      SUM(CASE WHEN dim_location.region = 'West' THEN total_amount ELSE 0 END) * 100.0 / 
+      NULLIF(SUM(total_amount), 0)
+  
+  - name: Non-West Revenue
+    expr: SUM(CASE WHEN dim_location.region != 'West' THEN total_amount ELSE 0 END)
+  
+  - name: Non-West Expansion Performance
+    expr: >
+      SUM(CASE WHEN dim_location.region != 'West' THEN total_amount ELSE 0 END) * 100.0 / 
+      NULLIF(SUM(total_amount), 0)
+  
+  - name: NSW/TAS/SA Revenue
+    expr: >
+      SUM(CASE 
+        WHEN dim_location.state IN ('NSW', 'TAS', 'SA') 
+        THEN total_amount 
+        ELSE 0 
+      END)
+  
+  - name: NSW/TAS/SA Market Share
+    expr: >
+      SUM(CASE 
+        WHEN dim_location.state IN ('NSW', 'TAS', 'SA') 
+        THEN total_amount 
+        ELSE 0 
+      END) * 100.0 / 
+      NULLIF(SUM(total_amount), 0)
+  
+  - name: Average Transaction Value
+    expr: SUM(total_amount) / NULLIF(COUNT(DISTINCT transaction_number), 0)
+  
+  - name: Units Sold
+    expr: SUM(quantity_sold)
+  
+  - name: Gross Margin Percentage
+    expr: SUM(gross_profit) * 100.0 / NULLIF(SUM(total_amount), 0)
+

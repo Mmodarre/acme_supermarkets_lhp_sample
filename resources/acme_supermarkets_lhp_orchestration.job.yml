@@ -4,76 +4,96 @@ resources:
   jobs:
     acme_supermarkets_lhp_orchestration:
       name: acme_supermarkets_lhp_orchestration
-      max_concurrent_runs: 1
+      
       tasks:
+        - task_key: file_transfer_notebook
+          notebook_task:
+            notebook_path: ${workspace.file_path}/Notebooks/03_Transfer_Files_To_Volume
+            base_parameters:
+              source_volume_path: /Volumes/acme_supermarkets/edw_raw/arrival
+              target_volume_path: /Volumes/acme_supermarkets/edw_raw/landing
+              tracking_catalog: acme_supermarkets
+              tracking_schema: _meta
+              restart: "false"
+
         - task_key: raw_ingestions_sap_pipeline
           pipeline_task:
             pipeline_id: ${resources.pipelines.raw_ingestions_sap_pipeline.id}
-            full_refresh: true
+            full_refresh: false
+          depends_on:
+            - task_key: file_transfer_notebook
+
         - task_key: raw_ingestions_ncr_pipeline
           pipeline_task:
             pipeline_id: ${resources.pipelines.raw_ingestions_ncr_pipeline.id}
-            full_refresh: true
+            full_refresh: false
+          depends_on:
+            - task_key: file_transfer_notebook
+        
         - task_key: raw_ingestions_sfcc_pipeline
           pipeline_task:
             pipeline_id: ${resources.pipelines.raw_ingestions_sfcc_pipeline.id}
-            full_refresh: true
+            full_refresh: false
+          depends_on:
+            - task_key: file_transfer_notebook
+
         - task_key: bronze_sap_pipeline
           depends_on:
             - task_key: raw_ingestions_sap_pipeline
           pipeline_task:
             pipeline_id: ${resources.pipelines.bronze_sap_pipeline.id}
-            full_refresh: true
+            full_refresh: false
         - task_key: bronze_ncr_pipeline
           depends_on:
             - task_key: raw_ingestions_ncr_pipeline
           pipeline_task:
             pipeline_id: ${resources.pipelines.bronze_ncr_pipeline.id}
-            full_refresh: true
+            full_refresh: false
         - task_key: bronze_sfcc_pipeline
           depends_on:
             - task_key: raw_ingestions_sfcc_pipeline
           pipeline_task:
             pipeline_id: ${resources.pipelines.bronze_sfcc_pipeline.id}
-            full_refresh: true
+            full_refresh: false
         - task_key: silver_facts_sap_pipeline
           depends_on:
             - task_key: bronze_sap_pipeline
           pipeline_task:
             pipeline_id: ${resources.pipelines.silver_facts_sap_pipeline.id}
-            full_refresh: true
+            full_refresh: false
         - task_key: silver_dimensions_sap_pipeline
           depends_on:
             - task_key: bronze_sap_pipeline
           pipeline_task:
             pipeline_id: ${resources.pipelines.silver_dimensions_sap_pipeline.id}
-            full_refresh: true
+            full_refresh: false
         - task_key: silver_facts_ncr_pipeline
           depends_on:
             - task_key: bronze_ncr_pipeline
           pipeline_task:
             pipeline_id: ${resources.pipelines.silver_facts_ncr_pipeline.id}
-            full_refresh: true
+            full_refresh: false
         - task_key: silver_dimensions_ncr_pipeline
           depends_on:
             - task_key: bronze_ncr_pipeline
           pipeline_task:
             pipeline_id: ${resources.pipelines.silver_dimensions_ncr_pipeline.id}
-            full_refresh: true
+            full_refresh: false
         - task_key: silver_dimensions_sfcc_pipeline
           depends_on:
             - task_key: bronze_sfcc_pipeline
           pipeline_task:
             pipeline_id: ${resources.pipelines.silver_dimensions_sfcc_pipeline.id}
-            full_refresh: true
+            full_refresh: false
         - task_key: silver_facts_sfcc_pipeline
           depends_on:
             - task_key: bronze_sfcc_pipeline
           pipeline_task:
             pipeline_id: ${resources.pipelines.silver_facts_sfcc_pipeline.id}
-            full_refresh: true
+            full_refresh: false
       queue:
         enabled: true
+      max_concurrent_runs: 1
       performance_target: PERFORMANCE_OPTIMIZED # Disabling performance optimization gives you startup times similar to Classic infrastructure and reduces your cost.
     
 

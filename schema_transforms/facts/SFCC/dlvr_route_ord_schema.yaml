@@ -1,0 +1,11 @@
+columns:
+  - "route_order_id: BIGINT"
+  - "route_id: BIGINT"
+  - "order_id: BIGINT"
+  - "sequence: BIGINT"
+  - "estimated_arrival: TIMESTAMP"
+  - "created_at: TIMESTAMP"
+  - "updated_at: TIMESTAMP"
+  - "last_update_dttm: TIMESTAMP"
+
+

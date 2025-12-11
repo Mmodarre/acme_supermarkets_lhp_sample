@@ -1,0 +1,101 @@
+version: 0.1
+
+source: acme_supermarkets.edw_gold.fact_order_fulfillment
+
+joins:
+  - name: dim_warehouse
+    source: acme_supermarkets.edw_gold.dim_warehouse
+    'on': source.warehouse_key = dim_warehouse.warehouse_id
+  
+  - name: dim_customer
+    source: acme_supermarkets.edw_gold.dim_customer
+    'on': source.customer_key = dim_customer.customer_id
+  
+  - name: dim_date
+    source: acme_supermarkets.edw_gold.dim_date
+    'on': source.order_date_key = dim_date.date_key
+
+filter: dim_customer.is_current = TRUE
+
+dimensions:
+  - name: Warehouse Location
+    expr: dim_warehouse.warehouse_name
+  
+  - name: Warehouse City
+    expr: dim_warehouse.city
+  
+  - name: Warehouse State
+    expr: dim_warehouse.state
+  
+  - name: Warehouse Region
+    expr: dim_warehouse.region
+  
+  - name: Order Status
+    expr: order_status
+  
+  - name: Fulfillment Status
+    expr: fulfillment_status
+  
+  - name: Is Shipped
+    expr: is_shipped
+  
+  - name: Customer Segment
+    expr: dim_customer.customer_segment
+  
+  - name: Order Month
+    expr: DATE_TRUNC('MONTH', dim_date.full_date)
+  
+  - name: Order Year
+    expr: dim_date.year
+  
+  - name: Order Day of Week
+    expr: dim_date.day_name
+
+measures:
+  - name: Total Orders
+    expr: COUNT(DISTINCT order_id)
+  
+  - name: Total Order Value
+    expr: SUM(total_amount)
+  
+  - name: Average Order Value
+    expr: SUM(total_amount) / NULLIF(COUNT(DISTINCT order_id), 0)
+  
+  - name: Order to Ship Hours
+    expr: AVG(order_to_ship_hours)
+  
+  - name: Order to Completion Days
+    expr: AVG(order_to_completion_days)
+  
+  - name: Same Day Fulfillment Count
+    expr: COUNT(CASE WHEN is_same_day_fulfillment = TRUE THEN 1 END)
+  
+  - name: Same Day Fulfillment Capability
+    expr: >
+      COUNT(CASE WHEN is_same_day_fulfillment = TRUE THEN 1 END) * 100.0 / 
+      NULLIF(COUNT(DISTINCT order_id), 0)
+  
+  - name: Next Day Fulfillment Count
+    expr: COUNT(CASE WHEN is_next_day_fulfillment = TRUE THEN 1 END)
+  
+  - name: Next Day Fulfillment Percentage
+    expr: >
+      COUNT(CASE WHEN is_next_day_fulfillment = TRUE THEN 1 END) * 100.0 / 
+      NULLIF(COUNT(DISTINCT order_id), 0)
+  
+  - name: Successfully Fulfilled Orders
+    expr: COUNT(CASE WHEN is_successfully_fulfilled = TRUE THEN 1 END)
+  
+  - name: Warehouse Fulfillment Success Rate
+    expr: >
+      COUNT(CASE WHEN is_successfully_fulfilled = TRUE THEN 1 END) * 100.0 / 
+      NULLIF(COUNT(DISTINCT order_id), 0)
+  
+  - name: On Time Delivery Count
+    expr: COUNT(CASE WHEN is_on_time_delivery = TRUE THEN 1 END)
+  
+  - name: On Time Delivery Rate
+    expr: >
+      COUNT(CASE WHEN is_on_time_delivery = TRUE THEN 1 END) * 100.0 / 
+      NULLIF(COUNT(CASE WHEN is_on_time_delivery IS NOT NULL THEN 1 END), 0)
+

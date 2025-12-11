@@ -1,0 +1,11 @@
+name: brand_dimension_schema
+description: "Schema transformation for brand dimension - type casting only, keep original column names"
+enforcement: permissive
+columns:
+  - "brand_id: BIGINT"
+  - "name: STRING"
+  - "status: STRING"
+  - "created_at: TIMESTAMP"
+  - "updated_at: TIMESTAMP"
+  - "last_update_dttm: TIMESTAMP"
+

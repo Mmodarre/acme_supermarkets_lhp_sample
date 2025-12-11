@@ -1,0 +1,202 @@
+version: 0.1
+
+source: acme_supermarkets.edw_gold.fact_sales_unified
+
+joins:
+  - name: dim_customer
+    source: acme_supermarkets.edw_gold.dim_customer
+    'on': source.customer_key = dim_customer.customer_id
+  
+  - name: dim_sales_channel
+    source: acme_supermarkets.edw_gold.dim_sales_channel
+    'on': source.sales_channel_key = dim_sales_channel.channel_key
+  
+  - name: dim_location
+    source: acme_supermarkets.edw_gold.dim_location
+    'on': source.location_key = dim_location.location_id
+  
+  - name: dim_product
+    source: acme_supermarkets.edw_gold.dim_product
+    'on': source.product_key = dim_product.product_id
+  
+  - name: dim_date
+    source: acme_supermarkets.edw_gold.dim_date
+    using: [date_key]
+
+filter: dim_customer.is_current = TRUE AND dim_location.is_current = TRUE AND dim_product.is_current = TRUE
+
+dimensions:
+  - name: Customer Segment
+    expr: dim_customer.customer_segment
+  
+  - name: Sales Channel
+    expr: dim_sales_channel.channel_name
+  
+  - name: Region
+    expr: dim_location.region
+  
+  - name: Product Category
+    expr: dim_product.category_name
+  
+  - name: Transaction Month
+    expr: DATE_TRUNC('MONTH', dim_date.full_date)
+  
+  - name: Transaction Quarter
+    expr: dim_date.quarter_name
+  
+  - name: Transaction Year
+    expr: dim_date.year
+  
+  - name: City
+    expr: dim_location.city
+
+measures:
+  - name: Omnichannel Customer Lifetime Value
+    expr: >
+      SUM(CASE 
+        WHEN customer_key IN (
+          SELECT customer_key 
+          FROM acme_supermarkets.edw_gold.fact_sales_unified 
+          WHERE sales_channel_key = 1
+        )
+        AND customer_key IN (
+          SELECT customer_key 
+          FROM acme_supermarkets.edw_gold.fact_sales_unified 
+          WHERE sales_channel_key = 2
+        )
+        THEN total_amount 
+      END) / 
+      NULLIF(COUNT(DISTINCT CASE 
+        WHEN customer_key IN (
+          SELECT customer_key 
+          FROM acme_supermarkets.edw_gold.fact_sales_unified 
+          WHERE sales_channel_key = 1
+        )
+        AND customer_key IN (
+          SELECT customer_key 
+          FROM acme_supermarkets.edw_gold.fact_sales_unified 
+          WHERE sales_channel_key = 2
+        )
+        THEN customer_key 
+      END), 0)
+  
+  - name: Single Channel Customer Lifetime Value
+    expr: >
+      SUM(CASE 
+        WHEN customer_key NOT IN (
+          SELECT customer_key 
+          FROM acme_supermarkets.edw_gold.fact_sales_unified 
+          GROUP BY customer_key 
+          HAVING COUNT(DISTINCT sales_channel_key) > 1
+        )
+        THEN total_amount 
+        ELSE 0 
+      END) / 
+      NULLIF(COUNT(DISTINCT CASE 
+        WHEN customer_key NOT IN (
+          SELECT customer_key 
+          FROM acme_supermarkets.edw_gold.fact_sales_unified 
+          GROUP BY customer_key 
+          HAVING COUNT(DISTINCT sales_channel_key) > 1
+        )
+        THEN customer_key 
+      END), 0)
+  
+  - name: Budget Segment Margin
+    expr: >
+      SUM(CASE 
+        WHEN dim_customer.customer_segment = 'budget' 
+        THEN gross_profit 
+        ELSE 0 
+      END) * 100.0 / 
+      NULLIF(SUM(CASE 
+        WHEN dim_customer.customer_segment = 'budget' 
+        THEN total_amount 
+        ELSE 0 
+      END), 0)
+  
+  - name: Premium Segment Margin
+    expr: >
+      SUM(CASE 
+        WHEN dim_customer.customer_segment = 'premium' 
+        THEN gross_profit 
+        ELSE 0 
+      END) * 100.0 / 
+      NULLIF(SUM(CASE 
+        WHEN dim_customer.customer_segment = 'premium' 
+        THEN total_amount 
+        ELSE 0 
+      END), 0)
+  
+  - name: Family Segment Margin
+    expr: >
+      SUM(CASE 
+        WHEN dim_customer.customer_segment = 'family' 
+        THEN gross_profit 
+        ELSE 0 
+      END) * 100.0 / 
+      NULLIF(SUM(CASE 
+        WHEN dim_customer.customer_segment = 'family' 
+        THEN total_amount 
+        ELSE 0 
+      END), 0)
+  
+  - name: Convenience Segment Margin
+    expr: >
+      SUM(CASE 
+        WHEN dim_customer.customer_segment = 'convenience' 
+        THEN gross_profit 
+        ELSE 0 
+      END) * 100.0 / 
+      NULLIF(SUM(CASE 
+        WHEN dim_customer.customer_segment = 'convenience' 
+        THEN total_amount 
+        ELSE 0 
+      END), 0)
+  
+  - name: Regional Revenue
+    expr: SUM(total_amount)
+  
+  - name: Regional Gross Profit
+    expr: SUM(gross_profit)
+  
+  - name: Regional Expansion Success YoY
+    expr: >
+      (SUM(CASE WHEN dim_date.year = YEAR(CURRENT_DATE()) THEN total_amount ELSE 0 END) - 
+       SUM(CASE WHEN dim_date.year = YEAR(CURRENT_DATE()) - 1 THEN total_amount ELSE 0 END)) * 100.0 / 
+      NULLIF(SUM(CASE WHEN dim_date.year = YEAR(CURRENT_DATE()) - 1 THEN total_amount ELSE 0 END), 0)
+  
+  - name: Digital Payment Penetration
+    expr: >
+      COUNT(DISTINCT CASE 
+        WHEN payment_method_key IS NOT NULL 
+        THEN transaction_number 
+      END) * 100.0 / 
+      NULLIF(COUNT(DISTINCT transaction_number), 0)
+  
+  - name: Health Category Revenue
+    expr: >
+      SUM(CASE 
+        WHEN dim_product.nutrition_data IS NOT NULL 
+        THEN total_amount 
+        ELSE 0 
+      END)
+  
+  - name: Health Category Leadership
+    expr: >
+      SUM(CASE 
+        WHEN dim_product.nutrition_data IS NOT NULL 
+        THEN total_amount 
+        ELSE 0 
+      END) * 100.0 / 
+      NULLIF(SUM(total_amount), 0)
+  
+  - name: Total Revenue
+    expr: SUM(total_amount)
+  
+  - name: Total Gross Profit
+    expr: SUM(gross_profit)
+  
+  - name: Blended Gross Margin
+    expr: SUM(gross_profit) * 100.0 / NULLIF(SUM(total_amount), 0)
+

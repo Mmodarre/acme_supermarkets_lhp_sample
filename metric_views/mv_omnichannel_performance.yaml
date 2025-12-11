@@ -1,0 +1,149 @@
+version: 0.1
+
+source: acme_supermarkets.edw_gold.fact_sales_unified
+
+joins:
+  - name: dim_date
+    source: acme_supermarkets.edw_gold.dim_date
+    using: [date_key]
+  
+  - name: dim_sales_channel
+    source: acme_supermarkets.edw_gold.dim_sales_channel
+    'on': source.sales_channel_key = dim_sales_channel.channel_key
+  
+  - name: dim_customer
+    source: acme_supermarkets.edw_gold.dim_customer
+    'on': source.customer_key = dim_customer.customer_id
+  
+  - name: dim_location
+    source: acme_supermarkets.edw_gold.dim_location
+    'on': source.location_key = dim_location.location_id
+
+filter: dim_customer.is_current = TRUE AND dim_location.is_current = TRUE
+
+dimensions:
+  - name: Transaction Date
+    expr: dim_date.full_date
+  
+  - name: Transaction Month
+    expr: DATE_TRUNC('MONTH', dim_date.full_date)
+  
+  - name: Transaction Quarter
+    expr: dim_date.quarter_name
+  
+  - name: Transaction Year
+    expr: dim_date.year
+  
+  - name: Fiscal Year
+    expr: dim_date.fiscal_year
+  
+  - name: Sales Channel
+    expr: dim_sales_channel.channel_name
+  
+  - name: Channel Type
+    expr: dim_sales_channel.channel_type
+  
+  - name: Channel Category
+    expr: dim_sales_channel.channel_category
+  
+  - name: Customer Segment
+    expr: dim_customer.customer_segment
+  
+  - name: Store Region
+    expr: dim_location.region
+  
+  - name: Store Sub-Region
+    expr: dim_location.sub_region
+  
+  - name: Store State
+    expr: dim_location.state
+
+measures:
+  - name: Total Revenue
+    expr: SUM(total_amount)
+  
+  - name: POS Revenue
+    expr: SUM(CASE WHEN sales_channel_key = 1 THEN total_amount ELSE 0 END)
+  
+  - name: E-commerce Revenue
+    expr: SUM(CASE WHEN sales_channel_key = 2 THEN total_amount ELSE 0 END)
+  
+  - name: Store-to-Online Revenue Ratio
+    expr: >
+      SUM(CASE WHEN sales_channel_key = 1 THEN total_amount ELSE 0 END) / 
+      NULLIF(SUM(CASE WHEN sales_channel_key = 2 THEN total_amount ELSE 0 END), 0)
+  
+  - name: Cross-Channel Customer Count
+    expr: >
+      COUNT(DISTINCT CASE 
+        WHEN customer_key IN (
+          SELECT customer_key 
+          FROM acme_supermarkets.edw_gold.fact_sales_unified 
+          WHERE sales_channel_key = 1
+        )
+        AND customer_key IN (
+          SELECT customer_key 
+          FROM acme_supermarkets.edw_gold.fact_sales_unified 
+          WHERE sales_channel_key = 2
+        )
+        THEN customer_key 
+      END)
+  
+  - name: Cross-Channel Customer Percentage
+    expr: >
+      COUNT(DISTINCT CASE 
+        WHEN customer_key IN (
+          SELECT customer_key 
+          FROM acme_supermarkets.edw_gold.fact_sales_unified 
+          WHERE sales_channel_key = 1
+        )
+        AND customer_key IN (
+          SELECT customer_key 
+          FROM acme_supermarkets.edw_gold.fact_sales_unified 
+          WHERE sales_channel_key = 2
+        )
+        THEN customer_key 
+      END) * 100.0 / 
+      NULLIF(COUNT(DISTINCT customer_key), 0)
+  
+  - name: Omnichannel Customer Revenue
+    expr: >
+      SUM(CASE 
+        WHEN customer_key IN (
+          SELECT customer_key 
+          FROM acme_supermarkets.edw_gold.fact_sales_unified 
+          WHERE sales_channel_key = 1
+        )
+        AND customer_key IN (
+          SELECT customer_key 
+          FROM acme_supermarkets.edw_gold.fact_sales_unified 
+          WHERE sales_channel_key = 2
+        )
+        THEN total_amount 
+        ELSE 0 
+      END)
+  
+  - name: Omnichannel Revenue Percentage
+    expr: >
+      SUM(CASE 
+        WHEN customer_key IN (
+          SELECT customer_key 
+          FROM acme_supermarkets.edw_gold.fact_sales_unified 
+          WHERE sales_channel_key = 1
+        )
+        AND customer_key IN (
+          SELECT customer_key 
+          FROM acme_supermarkets.edw_gold.fact_sales_unified 
+          WHERE sales_channel_key = 2
+        )
+        THEN total_amount 
+        ELSE 0 
+      END) * 100.0 / 
+      NULLIF(SUM(total_amount), 0)
+  
+  - name: Unique Customers
+    expr: COUNT(DISTINCT customer_key)
+  
+  - name: Transaction Count
+    expr: COUNT(DISTINCT transaction_number)
+

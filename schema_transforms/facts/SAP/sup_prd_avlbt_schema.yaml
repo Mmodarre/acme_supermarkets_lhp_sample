@@ -1,0 +1,14 @@
+columns:
+  - "availability_id: BIGINT"
+  - "vendor_id: BIGINT"
+  - "product_id: BIGINT"
+  - "available_qty: BIGINT"
+  - "reserved_qty: BIGINT"
+  - "stockout_until: DATE"
+  - "lead_time_days: BIGINT"
+  - "last_restocked_at: TIMESTAMP"
+  - "created_at: TIMESTAMP"
+  - "updated_at: TIMESTAMP"
+  - "last_update_dttm: TIMESTAMP"
+
+

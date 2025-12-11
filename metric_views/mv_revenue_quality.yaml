@@ -1,0 +1,168 @@
+version: 0.1
+
+source: acme_supermarkets.edw_gold.fact_sales_unified
+
+joins:
+  - name: dim_date
+    source: acme_supermarkets.edw_gold.dim_date
+    using: [date_key]
+  
+  - name: dim_location
+    source: acme_supermarkets.edw_gold.dim_location
+    'on': source.location_key = dim_location.location_id
+  
+  - name: dim_customer
+    source: acme_supermarkets.edw_gold.dim_customer
+    'on': source.customer_key = dim_customer.customer_id
+  
+  - name: dim_product
+    source: acme_supermarkets.edw_gold.dim_product
+    'on': source.product_key = dim_product.product_id
+  
+  - name: dim_employee
+    source: acme_supermarkets.edw_gold.dim_employee
+    'on': source.employee_key = dim_employee.employee_id
+  
+  - name: dim_sales_channel
+    source: acme_supermarkets.edw_gold.dim_sales_channel
+    'on': source.sales_channel_key = dim_sales_channel.channel_key
+
+filter: dim_location.is_current = TRUE AND dim_customer.is_current = TRUE AND dim_product.is_current = TRUE AND dim_employee.is_current = TRUE
+
+dimensions:
+  - name: Transaction Date
+    expr: dim_date.full_date
+  
+  - name: Transaction Month
+    expr: DATE_TRUNC('MONTH', dim_date.full_date)
+  
+  - name: Transaction Year
+    expr: dim_date.year
+  
+  - name: Store Location
+    expr: dim_location.location_name
+  
+  - name: Customer Segment
+    expr: dim_customer.customer_segment
+  
+  - name: Product Category
+    expr: dim_product.category_name
+  
+  - name: Sales Channel
+    expr: dim_sales_channel.channel_name
+  
+  - name: Comparison Period
+    expr: >
+      CASE 
+        WHEN dim_date.year = YEAR(CURRENT_DATE()) THEN 'Current Year'
+        WHEN dim_date.year = YEAR(CURRENT_DATE()) - 1 THEN 'Prior Year'
+        ELSE 'Historical'
+      END
+
+measures:
+  - name: Total Revenue
+    expr: SUM(total_amount)
+  
+  - name: Current Year Revenue
+    expr: SUM(CASE WHEN dim_date.year = YEAR(CURRENT_DATE()) THEN total_amount ELSE 0 END)
+  
+  - name: Prior Year Revenue
+    expr: SUM(CASE WHEN dim_date.year = YEAR(CURRENT_DATE()) - 1 THEN total_amount ELSE 0 END)
+  
+  - name: Same Store Sales Growth YoY
+    expr: >
+      (SUM(CASE WHEN dim_date.year = YEAR(CURRENT_DATE()) THEN total_amount ELSE 0 END) - 
+       SUM(CASE WHEN dim_date.year = YEAR(CURRENT_DATE()) - 1 THEN total_amount ELSE 0 END)) * 100.0 / 
+      NULLIF(SUM(CASE WHEN dim_date.year = YEAR(CURRENT_DATE()) - 1 THEN total_amount ELSE 0 END), 0)
+  
+  - name: Organic Revenue Growth
+    expr: >
+      (SUM(CASE WHEN dim_date.year = YEAR(CURRENT_DATE()) THEN total_amount ELSE 0 END) - 
+       SUM(CASE WHEN dim_date.year = YEAR(CURRENT_DATE()) - 1 THEN total_amount ELSE 0 END)) * 100.0 / 
+      NULLIF(SUM(CASE WHEN dim_date.year = YEAR(CURRENT_DATE()) - 1 THEN total_amount ELSE 0 END), 0)
+  
+  - name: Average Transaction Value Current Year
+    expr: >
+      SUM(CASE WHEN dim_date.year = YEAR(CURRENT_DATE()) THEN total_amount ELSE 0 END) / 
+      NULLIF(COUNT(DISTINCT CASE WHEN dim_date.year = YEAR(CURRENT_DATE()) THEN transaction_number END), 0)
+  
+  - name: Average Transaction Value Prior Year
+    expr: >
+      SUM(CASE WHEN dim_date.year = YEAR(CURRENT_DATE()) - 1 THEN total_amount ELSE 0 END) / 
+      NULLIF(COUNT(DISTINCT CASE WHEN dim_date.year = YEAR(CURRENT_DATE()) - 1 THEN transaction_number END), 0)
+  
+  - name: Average Transaction Size Growth YoY
+    expr: >
+      ((SUM(CASE WHEN dim_date.year = YEAR(CURRENT_DATE()) THEN total_amount ELSE 0 END) / 
+        NULLIF(COUNT(DISTINCT CASE WHEN dim_date.year = YEAR(CURRENT_DATE()) THEN transaction_number END), 0)) - 
+       (SUM(CASE WHEN dim_date.year = YEAR(CURRENT_DATE()) - 1 THEN total_amount ELSE 0 END) / 
+        NULLIF(COUNT(DISTINCT CASE WHEN dim_date.year = YEAR(CURRENT_DATE()) - 1 THEN transaction_number END), 0))) * 100.0 / 
+      NULLIF((SUM(CASE WHEN dim_date.year = YEAR(CURRENT_DATE()) - 1 THEN total_amount ELSE 0 END) / 
+              NULLIF(COUNT(DISTINCT CASE WHEN dim_date.year = YEAR(CURRENT_DATE()) - 1 THEN transaction_number END), 0)), 0)
+  
+  - name: Channel Revenue Balance
+    expr: >
+      SUM(CASE WHEN sales_channel_key = 1 THEN total_amount ELSE 0 END) / 
+      NULLIF(SUM(CASE WHEN sales_channel_key = 2 THEN total_amount ELSE 0 END), 0)
+  
+  - name: New Product Revenue
+    expr: >
+      SUM(CASE 
+        WHEN dim_product.product_created_at >= DATE_SUB(CURRENT_DATE(), 365) 
+        THEN total_amount 
+        ELSE 0 
+      END)
+  
+  - name: New Product Revenue Percentage
+    expr: >
+      SUM(CASE 
+        WHEN dim_product.product_created_at >= DATE_SUB(CURRENT_DATE(), 365) 
+        THEN total_amount 
+        ELSE 0 
+      END) * 100.0 / 
+      NULLIF(SUM(total_amount), 0)
+  
+  - name: Revenue per Employee
+    expr: SUM(total_amount) / NULLIF(COUNT(DISTINCT employee_key), 0)
+  
+  - name: Top 10 Customers Revenue
+    expr: >
+      SUM(CASE 
+        WHEN customer_key IN (
+          SELECT customer_key 
+          FROM acme_supermarkets.edw_gold.fact_sales_unified 
+          GROUP BY customer_key 
+          ORDER BY SUM(total_amount) DESC 
+          LIMIT 10
+        ) 
+        THEN total_amount 
+        ELSE 0 
+      END)
+  
+  - name: Revenue Concentration Risk
+    expr: >
+      SUM(CASE 
+        WHEN customer_key IN (
+          SELECT customer_key 
+          FROM acme_supermarkets.edw_gold.fact_sales_unified 
+          GROUP BY customer_key 
+          ORDER BY SUM(total_amount) DESC 
+          LIMIT 10
+        ) 
+        THEN total_amount 
+        ELSE 0 
+      END) * 100.0 / 
+      NULLIF(SUM(total_amount), 0)
+  
+  - name: Revenue per Customer by Segment
+    expr: SUM(total_amount) / NULLIF(COUNT(DISTINCT customer_key), 0)
+  
+  - name: Transaction Count
+    expr: COUNT(DISTINCT transaction_number)
+  
+  - name: Transaction Count Growth YoY
+    expr: >
+      (COUNT(DISTINCT CASE WHEN dim_date.year = YEAR(CURRENT_DATE()) THEN transaction_number END) - 
+       COUNT(DISTINCT CASE WHEN dim_date.year = YEAR(CURRENT_DATE()) - 1 THEN transaction_number END)) * 100.0 / 
+      NULLIF(COUNT(DISTINCT CASE WHEN dim_date.year = YEAR(CURRENT_DATE()) - 1 THEN transaction_number END), 0)
+

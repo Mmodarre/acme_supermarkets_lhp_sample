@@ -1,0 +1,13 @@
+# Delivery Route Order - Accumulating Snapshot Fact with Dual Tables
+# Uses silver_accumulating_fact_template
+
+pipeline: silver_facts_sfcc
+flowgroup: dlvr_route_ord_silver_TMPL009
+job_name: SAP_SFCC
+
+use_template: TMPL009_silver_transactional_fact_template
+template_parameters:
+  table_name: dlvr_route_ord
+  source_system: sfcc
+  source_table: bronze_sfcc_dlvr_route_ord
+  schema_file: "schema_transforms/facts/SFCC/dlvr_route_ord_schema.yaml"

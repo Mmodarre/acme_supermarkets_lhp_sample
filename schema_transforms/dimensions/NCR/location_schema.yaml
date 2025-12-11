@@ -1,0 +1,12 @@
+columns:
+  - "location_id: BIGINT"
+  - "location_type: STRING"
+  - "name: STRING"
+  - "address_line1: STRING"
+  - "address_line2: STRING"
+  - "city: STRING"
+  - "state: STRING"
+  - "zip_code: STRING"
+  - "country: STRING"
+  - "status: STRING"
+  - "last_update_dttm: TIMESTAMP"

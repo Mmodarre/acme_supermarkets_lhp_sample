@@ -4,6 +4,7 @@
 
 pipeline: silver_facts_ncr
 flowgroup: str_invtry_fact_TMPL006
+job_name: NCR
 
 use_template: TMPL006_silver_fact_scd2_template
 template_parameters:
@@ -13,16 +14,7 @@ template_parameters:
   primary_keys:
     - "store_inventory_id"
   sequence_by: "last_update_dttm"
-  type_casting:
-    store_inventory_id: "BIGINT"
-    store_id: "BIGINT"
-    product_id: "BIGINT"
-    on_hand_qty: "BIGINT"
-    reserved_qty: "BIGINT"
-    safety_stock_qty: "BIGINT"
-    reorder_point: "BIGINT"
-    last_update_dttm: "TIMESTAMP"
-    _processing_timestamp: "TIMESTAMP"
+  schema_file: "schema_transforms/facts/NCR/str_invtry_schema.yaml"
   track_history_except:
     - "_processing_timestamp"
     - "last_update_dttm"

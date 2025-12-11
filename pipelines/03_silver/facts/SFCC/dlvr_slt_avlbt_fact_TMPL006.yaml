@@ -1,0 +1,24 @@
+# Delivery Slot Availability Fact - SCD Type 2 for tracking slot capacity changes
+# Tracks bookings_count, capacity_remaining changes over time
+# Uses silver_fact_scd2_template
+
+pipeline: silver_facts_sfcc
+flowgroup: dlvr_slt_avlbt_fact_TMPL006
+job_name: SAP_SFCC
+
+use_template: TMPL006_silver_fact_scd2_template
+template_parameters:
+  table_name: dlvr_slt_avlbt
+  source_system: sfcc
+  source_table: bronze_sfcc_dlvr_slt_avlbt
+  primary_keys:
+    - "availability_id"
+  sequence_by: "last_update_dttm"
+  schema_file: "schema_transforms/facts/SFCC/dlvr_slt_avlbt_schema.yaml"
+  track_history_except:
+    - "_processing_timestamp"
+    - "last_update_dttm"
+    - "_source_file_path"
+
+
+

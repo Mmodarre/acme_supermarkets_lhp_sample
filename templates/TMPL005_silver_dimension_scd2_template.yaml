@@ -23,10 +23,10 @@ parameters:
     required: true
     description: "Primary key columns for the dimension"
   
-  - name: type_casting
-    type: object
+  - name: schema_file
+    type: string
     required: true
-    description: "Column name to data type mapping for schema transform"
+    description: "Path to schema transform file (relative to project root, e.g., 'schema_transforms/dimensions/SAP/uom_schema.yaml')"
   
   - name: sequence_by
     type: string
@@ -59,11 +59,9 @@ actions:
   - name: "transform_{{ table_name }}_schema"
     type: transform
     transform_type: schema
-    source:
-      view: "v_bronze_{{ source_system }}_{{ table_name }}"
-      schema:
-        enforcement: flexible
-        type_casting: "{{ type_casting }}"
+    source: "v_bronze_{{ source_system }}_{{ table_name }}"
+    schema_file: "{{ schema_file }}"
+    enforcement: permissive
     target: "v_{{ table_name }}_standardized"
     readMode: stream
     description: "Apply type casting to {{ table_name }} data (keep original column names)"

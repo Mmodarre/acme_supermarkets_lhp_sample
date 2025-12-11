@@ -1,0 +1,24 @@
+# Supplier Product Availability Fact - SCD Type 2 for tracking availability changes
+# Tracks available_qty, reserved_qty, stockout_until changes over time
+# Uses silver_fact_scd2_template
+
+pipeline: silver_facts_sap
+flowgroup: sup_prd_avlbt_fact_TMPL006
+job_name: SAP_SFCC
+
+use_template: TMPL006_silver_fact_scd2_template
+template_parameters:
+  table_name: sup_prd_avlbt
+  source_system: sap
+  source_table: bronze_sap_sup_prd_avlbt
+  primary_keys:
+    - "availability_id"
+  sequence_by: "last_update_dttm"
+  schema_file: "schema_transforms/facts/SAP/sup_prd_avlbt_schema.yaml"
+  track_history_except:
+    - "_processing_timestamp"
+    - "last_update_dttm"
+    - "_source_file_path"
+
+
+

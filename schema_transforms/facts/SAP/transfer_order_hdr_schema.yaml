@@ -1,0 +1,9 @@
+columns:
+  - "transfer_id: BIGINT"
+  - "source_location_id: BIGINT"
+  - "dest_location_id: BIGINT"
+  - "created_at: TIMESTAMP"
+  - "shipped_at: TIMESTAMP"
+  - "received_at: TIMESTAMP"
+  - "status: STRING"
+  - "last_update_dttm: TIMESTAMP"

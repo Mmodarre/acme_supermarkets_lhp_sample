@@ -3,26 +3,12 @@
 
 pipeline: silver_facts_sfcc
 flowgroup: sls_ord_ln_silver_TMPL009
+job_name: SAP_SFCC
 
 use_template: TMPL009_silver_transactional_fact_template
 template_parameters:
   table_name: sls_ord_ln
   source_system: sfcc
   source_table: bronze_sfcc_sls_ord_ln
-  type_casting:
-    line_id: "BIGINT"
-    order_id: "BIGINT"
-    line_number: "BIGINT"
-    product_id: "BIGINT"
-    qty: "BIGINT"
-    unit_price: "DECIMAL(10,2)"
-    discount_amount: "DECIMAL(10,2)"
-    tax_amount: "DECIMAL(10,2)"
-    line_total: "DECIMAL(10,2)"
-    status: "STRING"
-    allocated_qty: "BIGINT"
-    shipped_qty: "BIGINT"
-    cancelled_qty: "BIGINT"
-    last_update_dttm: "TIMESTAMP"
-    _processing_timestamp: "TIMESTAMP"
+  schema_file: "schema_transforms/facts/SFCC/sls_ord_ln_schema.yaml"
 

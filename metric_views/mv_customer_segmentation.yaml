@@ -1,0 +1,188 @@
+version: 0.1
+
+source: acme_supermarkets.edw_gold.fact_sales_unified
+
+joins:
+  - name: dim_customer
+    source: acme_supermarkets.edw_gold.dim_customer
+    'on': source.customer_key = dim_customer.customer_id
+  
+  - name: dim_date
+    source: acme_supermarkets.edw_gold.dim_date
+    using: [date_key]
+  
+  - name: dim_sales_channel
+    source: acme_supermarkets.edw_gold.dim_sales_channel
+    'on': source.sales_channel_key = dim_sales_channel.channel_key
+
+filter: dim_customer.is_current = TRUE
+
+dimensions:
+  - name: Customer Segment
+    expr: dim_customer.customer_segment
+  
+  - name: Customer Age Group
+    expr: dim_customer.age_group
+  
+  - name: Customer Tenure Group
+    expr: >
+      CASE 
+        WHEN dim_customer.customer_tenure_months < 6 THEN 'New (0-6 months)'
+        WHEN dim_customer.customer_tenure_months < 12 THEN 'Growing (6-12 months)'
+        ELSE 'Established (12+ months)'
+      END
+  
+  - name: Channel Preference
+    expr: dim_sales_channel.channel_name
+  
+  - name: Transaction Month
+    expr: DATE_TRUNC('MONTH', dim_date.full_date)
+  
+  - name: Transaction Year
+    expr: dim_date.year
+
+measures:
+  - name: Unique Customers
+    expr: COUNT(DISTINCT customer_key)
+  
+  - name: Active Customers 90 Day
+    expr: >
+      COUNT(DISTINCT CASE 
+        WHEN dim_date.full_date >= DATE_SUB(CURRENT_DATE(), 90) 
+        THEN customer_key 
+      END)
+  
+  - name: Active Customer Rate
+    expr: >
+      COUNT(DISTINCT CASE 
+        WHEN dim_date.full_date >= DATE_SUB(CURRENT_DATE(), 90) 
+        THEN customer_key 
+      END) * 100.0 / 
+      NULLIF(COUNT(DISTINCT customer_key), 0)
+  
+  - name: Budget Segment Revenue
+    expr: >
+      SUM(CASE 
+        WHEN dim_customer.customer_segment = 'budget' 
+        THEN total_amount 
+        ELSE 0 
+      END)
+  
+  - name: Premium Segment Revenue
+    expr: >
+      SUM(CASE 
+        WHEN dim_customer.customer_segment = 'premium' 
+        THEN total_amount 
+        ELSE 0 
+      END)
+  
+  - name: Family Segment Revenue
+    expr: >
+      SUM(CASE 
+        WHEN dim_customer.customer_segment = 'family' 
+        THEN total_amount 
+        ELSE 0 
+      END)
+  
+  - name: Family Segment Basket Size
+    expr: >
+      SUM(CASE 
+        WHEN dim_customer.customer_segment = 'family' 
+        THEN quantity_sold 
+        ELSE 0 
+      END) / 
+      NULLIF(COUNT(DISTINCT CASE 
+        WHEN dim_customer.customer_segment = 'family' 
+        THEN transaction_number 
+      END), 0)
+  
+  - name: Convenience Segment Revenue
+    expr: >
+      SUM(CASE 
+        WHEN dim_customer.customer_segment = 'convenience' 
+        THEN total_amount 
+        ELSE 0 
+      END)
+  
+  - name: Convenience Segment Frequency
+    expr: >
+      COUNT(DISTINCT CASE 
+        WHEN dim_customer.customer_segment = 'convenience' 
+        THEN transaction_number 
+      END) / 
+      NULLIF(COUNT(DISTINCT CASE 
+        WHEN dim_customer.customer_segment = 'convenience' 
+        THEN customer_key 
+      END), 0)
+  
+  - name: Segment Specific Margin Budget
+    expr: >
+      SUM(CASE 
+        WHEN dim_customer.customer_segment = 'budget' 
+        THEN gross_profit 
+        ELSE 0 
+      END) * 100.0 / 
+      NULLIF(SUM(CASE 
+        WHEN dim_customer.customer_segment = 'budget' 
+        THEN total_amount 
+        ELSE 0 
+      END), 0)
+  
+  - name: Segment Specific Margin Premium
+    expr: >
+      SUM(CASE 
+        WHEN dim_customer.customer_segment = 'premium' 
+        THEN gross_profit 
+        ELSE 0 
+      END) * 100.0 / 
+      NULLIF(SUM(CASE 
+        WHEN dim_customer.customer_segment = 'premium' 
+        THEN total_amount 
+        ELSE 0 
+      END), 0)
+  
+  - name: Segment Specific Margin Family
+    expr: >
+      SUM(CASE 
+        WHEN dim_customer.customer_segment = 'family' 
+        THEN gross_profit 
+        ELSE 0 
+      END) * 100.0 / 
+      NULLIF(SUM(CASE 
+        WHEN dim_customer.customer_segment = 'family' 
+        THEN total_amount 
+        ELSE 0 
+      END), 0)
+  
+  - name: Segment Specific Margin Convenience
+    expr: >
+      SUM(CASE 
+        WHEN dim_customer.customer_segment = 'convenience' 
+        THEN gross_profit 
+        ELSE 0 
+      END) * 100.0 / 
+      NULLIF(SUM(CASE 
+        WHEN dim_customer.customer_segment = 'convenience' 
+        THEN total_amount 
+        ELSE 0 
+      END), 0)
+  
+  - name: Customer Purchase Frequency
+    expr: >
+      COUNT(DISTINCT transaction_number) / 
+      NULLIF(COUNT(DISTINCT customer_key), 0)
+  
+  - name: Premium Segment Penetration
+    expr: >
+      COUNT(DISTINCT CASE 
+        WHEN dim_customer.customer_segment = 'premium' 
+        THEN customer_key 
+      END) * 100.0 / 
+      NULLIF(COUNT(DISTINCT customer_key), 0)
+  
+  - name: Revenue per Customer
+    expr: SUM(total_amount) / NULLIF(COUNT(DISTINCT customer_key), 0)
+  
+  - name: Customer Lifetime Value
+    expr: SUM(total_amount) / NULLIF(COUNT(DISTINCT customer_key), 0)
+

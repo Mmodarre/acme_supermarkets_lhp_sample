@@ -3,6 +3,7 @@
 
 pipeline: silver_dimensions_ncr
 flowgroup: pos_terminal_dim_TMPL005
+job_name: NCR
 
 use_template: TMPL005_silver_dimension_scd2_template
 template_parameters:
@@ -12,14 +13,7 @@ template_parameters:
   primary_keys:
     - "terminal_id"
   sequence_by: "last_update_dttm"
-  type_casting:
-    terminal_id: "BIGINT"
-    store_id: "BIGINT"
-    name: "STRING"
-    terminal_number: "STRING"
-    installed_at: "TIMESTAMP"
-    status: "STRING"
-    last_update_dttm: "TIMESTAMP"
+  schema_file: "schema_transforms/dimensions/NCR/pos_terminal_schema.yaml"
   track_history_except:
     - "_processing_timestamp"
     - "_source_file_path"

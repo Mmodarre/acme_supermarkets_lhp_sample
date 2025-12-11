@@ -4,6 +4,7 @@ pipeline: bronze_sap
 # Flowgroup are conceptual artifacts and has no functional purpose
 # there are used to group actions together in the generated files
 flowgroup: bronze_sap_prd_TMPL004
+job_name: SAP_SFCC
 
 # Use the template to generate the actions for the pipeline
 # Template parameters are used to pass in the table name and landing folder

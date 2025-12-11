@@ -1,0 +1,9 @@
+columns:
+  - "wh_inventory_id: BIGINT"
+  - "warehouse_id: BIGINT"
+  - "product_id: BIGINT"
+  - "on_hand_qty: BIGINT"
+  - "reserved_qty: BIGINT"
+  - "last_update_dttm: TIMESTAMP"
+
+

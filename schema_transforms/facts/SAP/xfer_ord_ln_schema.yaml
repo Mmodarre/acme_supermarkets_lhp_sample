@@ -1,0 +1,7 @@
+columns:
+  - "transfer_line_id: BIGINT"
+  - "transfer_id: BIGINT"
+  - "product_id: BIGINT"
+  - "qty: BIGINT"
+  - "uom_id: BIGINT"
+  - "last_update_dttm: TIMESTAMP"

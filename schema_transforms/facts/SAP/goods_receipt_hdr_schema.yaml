@@ -1,0 +1,7 @@
+columns:
+  - "grn_id: BIGINT"
+  - "po_id: BIGINT"
+  - "receipt_date: DATE"
+  - "received_by_user_id: BIGINT"
+  - "status: STRING"
+  - "last_update_dttm: TIMESTAMP"

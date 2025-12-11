@@ -1,0 +1,30 @@
+# Goods Receipt Header - Accumulating Snapshot Fact with Dual Tables
+# Uses silver_accumulating_fact_template
+
+pipeline: silver_facts_sap
+flowgroup: rcpt_hdr_silver_TMPL007
+job_name: SAP_SFCC
+
+use_template: TMPL007_silver_accumulating_fact_template
+template_parameters:
+  table_name: rcpt_hdr
+  source_system: sap
+  source_table: brz_sap_prch_ord_rcpt_hdr
+  primary_keys:
+    - "grn_id"
+  schema_file: "schema_transforms/facts/SAP/goods_receipt_hdr_schema.yaml"
+  track_history_except:
+    - "_processing_timestamp"
+    - "_source_file_path"
+    - "last_update_dttm"
+  status_column: status
+  status_values:
+    - "completed"
+  sequence_by: "last_update_dttm"
+  group_by_columns:
+    - "grn_id"
+    - "po_id"
+  additional_columns:
+    - "receipt_date"
+    - "received_by_user_id"
+

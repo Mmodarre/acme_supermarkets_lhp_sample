@@ -1,0 +1,10 @@
+columns:
+  - "txn_line_id: BIGINT"
+  - "txn_id: BIGINT"
+  - "line_number: BIGINT"
+  - "product_id: BIGINT"
+  - "qty: BIGINT"
+  - "unit_price: DECIMAL(10,2)"
+  - "line_discount: DECIMAL(10,2)"
+  - "line_total: DECIMAL(10,2)"
+  - "last_update_dttm: TIMESTAMP"

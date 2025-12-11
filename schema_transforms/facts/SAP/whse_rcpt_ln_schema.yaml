@@ -1,0 +1,9 @@
+columns:
+  - "receipt_line_id: BIGINT"
+  - "receipt_id: BIGINT"
+  - "product_id: BIGINT"
+  - "qty: BIGINT"
+  - "uom_id: BIGINT"
+  - "last_update_dttm: TIMESTAMP"
+
+

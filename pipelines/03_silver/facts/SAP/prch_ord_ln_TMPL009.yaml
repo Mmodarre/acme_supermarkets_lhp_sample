@@ -3,22 +3,12 @@
 
 pipeline: silver_facts_sap
 flowgroup: prch_ord_ln_silver_TMPL009
+job_name: SAP_SFCC
 
 use_template: TMPL009_silver_transactional_fact_template
 template_parameters:
   table_name: prch_ord_ln
   source_system: sap
   source_table: brz_sap_prch_ord_ln
-  type_casting:
-    po_line_id: "BIGINT"
-    po_id: "BIGINT"
-    product_id: "BIGINT"
-    ordered_qty: "BIGINT"
-    uom_id: "BIGINT"
-    unit_price: "DECIMAL(10,2)"
-    tax_rate: "DECIMAL(5,2)"
-    due_date: "DATE"
-    status: "STRING"
-    last_update_dttm: "TIMESTAMP"
-    _processing_timestamp: "TIMESTAMP"
+  schema_file: "schema_transforms/facts/SAP/prch_ord_ln_schema.yaml"
 

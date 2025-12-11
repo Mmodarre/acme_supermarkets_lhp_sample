@@ -1,0 +1,139 @@
+version: 0.1
+
+source: acme_supermarkets.edw_gold.fact_sales_unified
+
+joins:
+  - name: dim_payment_method
+    source: acme_supermarkets.edw_gold.dim_payment_method
+    'on': source.payment_method_key = dim_payment_method.payment_method_id
+  
+  - name: dim_date
+    source: acme_supermarkets.edw_gold.dim_date
+    using: [date_key]
+  
+  - name: dim_customer
+    source: acme_supermarkets.edw_gold.dim_customer
+    'on': source.customer_key = dim_customer.customer_id
+  
+  - name: dim_sales_channel
+    source: acme_supermarkets.edw_gold.dim_sales_channel
+    'on': source.sales_channel_key = dim_sales_channel.channel_key
+
+filter: dim_payment_method.is_current = TRUE AND dim_customer.is_current = TRUE
+
+dimensions:
+  - name: Payment Method
+    expr: dim_payment_method.payment_method_name
+  
+  - name: Payment Type Category
+    expr: dim_payment_method.payment_type_category
+  
+  - name: Sales Channel
+    expr: dim_sales_channel.channel_name
+  
+  - name: Customer Segment
+    expr: dim_customer.customer_segment
+  
+  - name: Transaction Month
+    expr: DATE_TRUNC('MONTH', dim_date.full_date)
+  
+  - name: Transaction Year
+    expr: dim_date.year
+  
+  - name: Transaction Size Bucket
+    expr: >
+      CASE 
+        WHEN total_amount < 25 THEN 'Small (<$25)'
+        WHEN total_amount < 50 THEN 'Medium ($25-$50)'
+        WHEN total_amount < 100 THEN 'Large ($50-$100)'
+        ELSE 'Very Large (>$100)'
+      END
+
+measures:
+  - name: Total Transactions
+    expr: COUNT(DISTINCT transaction_number)
+  
+  - name: Total Revenue
+    expr: SUM(total_amount)
+  
+  - name: Digital Payment Transaction Count
+    expr: >
+      COUNT(DISTINCT CASE 
+        WHEN dim_payment_method.payment_type_category IN ('Digital Wallet', 'Mobile Payment', 'Card - Debit', 'Card - Credit') 
+        THEN transaction_number 
+      END)
+  
+  - name: Cash Transaction Count
+    expr: >
+      COUNT(DISTINCT CASE 
+        WHEN dim_payment_method.payment_type_category = 'Cash' 
+        THEN transaction_number 
+      END)
+  
+  - name: Digital Payment Adoption
+    expr: >
+      COUNT(DISTINCT CASE 
+        WHEN dim_payment_method.payment_type_category IN ('Digital Wallet', 'Mobile Payment', 'Card - Debit', 'Card - Credit') 
+        THEN transaction_number 
+      END) * 100.0 / 
+      NULLIF(COUNT(DISTINCT transaction_number), 0)
+  
+  - name: Cash Transaction Percentage
+    expr: >
+      COUNT(DISTINCT CASE 
+        WHEN dim_payment_method.payment_type_category = 'Cash' 
+        THEN transaction_number 
+      END) * 100.0 / 
+      NULLIF(COUNT(DISTINCT transaction_number), 0)
+  
+  - name: Mobile Wallet Transaction Count
+    expr: >
+      COUNT(DISTINCT CASE 
+        WHEN dim_payment_method.payment_type_category IN ('Digital Wallet', 'Mobile Payment') 
+        THEN transaction_number 
+      END)
+  
+  - name: Mobile Wallet Revenue
+    expr: >
+      SUM(CASE 
+        WHEN dim_payment_method.payment_type_category IN ('Digital Wallet', 'Mobile Payment') 
+        THEN total_amount 
+        ELSE 0 
+      END)
+  
+  - name: Mobile Wallet Revenue Share
+    expr: >
+      SUM(CASE 
+        WHEN dim_payment_method.payment_type_category IN ('Digital Wallet', 'Mobile Payment') 
+        THEN total_amount 
+        ELSE 0 
+      END) * 100.0 / 
+      NULLIF(SUM(total_amount), 0)
+  
+  - name: Payment Method Diversity Count
+    expr: COUNT(DISTINCT payment_method_key)
+  
+  - name: Payment Method Diversity Percentage
+    expr: >
+      COUNT(DISTINCT payment_method_key) * 100.0 / 
+      16.0
+  
+  - name: Non-Cash Revenue
+    expr: >
+      SUM(CASE 
+        WHEN dim_payment_method.payment_type_category != 'Cash' 
+        THEN total_amount 
+        ELSE 0 
+      END)
+  
+  - name: Non-Cash Transaction Percentage
+    expr: >
+      COUNT(DISTINCT CASE 
+        WHEN dim_payment_method.payment_type_category != 'Cash' 
+        THEN transaction_number 
+      END) * 100.0 / 
+      NULLIF(COUNT(DISTINCT transaction_number), 0)
+  
+  - name: Average Transaction Value by Payment Type
+    expr: SUM(total_amount) / NULLIF(COUNT(DISTINCT transaction_number), 0)
+

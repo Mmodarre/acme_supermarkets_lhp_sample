@@ -1,0 +1,12 @@
+columns:
+  - "store_inv_txn_id: BIGINT"
+  - "store_id: BIGINT"
+  - "product_id: BIGINT"
+  - "txn_type: STRING"
+  - "qty: BIGINT"
+  - "source_ref: STRING"
+  - "created_at: TIMESTAMP"
+  - "user_id: BIGINT"
+  - "last_update_dttm: TIMESTAMP"
+
+

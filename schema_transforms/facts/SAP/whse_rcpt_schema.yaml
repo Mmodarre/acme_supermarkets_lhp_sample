@@ -1,0 +1,9 @@
+columns:
+  - "receipt_id: BIGINT"
+  - "warehouse_id: BIGINT"
+  - "grn_id: BIGINT"
+  - "received_at: TIMESTAMP"
+  - "status: STRING"
+  - "last_update_dttm: TIMESTAMP"
+
+

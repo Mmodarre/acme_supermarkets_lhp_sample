@@ -1,5 +1,6 @@
 pipeline: bronze_sfcc
 flowgroup: bronze_sfcc_sls_ord_TMPL004 
+job_name: SAP_SFCC
 
 use_template: TMPL004_raw_to_bronze_standard_template
 template_parameters:

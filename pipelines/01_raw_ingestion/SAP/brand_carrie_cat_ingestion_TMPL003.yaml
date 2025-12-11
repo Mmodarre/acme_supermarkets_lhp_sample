@@ -1,0 +1,29 @@
+
+pipeline: raw_ingestions_sap
+flowgroup: sap_brand_ingestion_TMPL003
+job_name: SAP_SFCC
+use_template: TMPL003_parquet_ingestion_template
+
+
+template_parameters:
+  table_name: raw_sap_brand
+  landing_folder: brand
+---
+pipeline: raw_ingestions_sap
+flowgroup: sap_carrier_ingestion_TMPL003
+job_name: SAP_SFCC
+
+use_template: TMPL003_parquet_ingestion_template
+template_parameters:
+  table_name: raw_sap_carrier
+  landing_folder: carrier
+---
+pipeline: raw_ingestions_sap
+flowgroup: sap_cat_ingestion_TMPL003
+job_name: SAP_SFCC
+
+use_template: TMPL003_parquet_ingestion_template
+template_parameters:
+  table_name: raw_sap_cat
+  landing_folder: category
+

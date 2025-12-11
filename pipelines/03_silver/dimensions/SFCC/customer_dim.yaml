@@ -3,6 +3,7 @@
 
 pipeline: silver_dimensions_sfcc
 flowgroup: customer_dim
+job_name: SAP_SFCC
 
 actions:
   # Step 1: Load customer data from bronze layer
@@ -20,22 +21,21 @@ actions:
   - name: transform_customer_schema
     type: transform
     transform_type: schema
-    source:
-      view: v_bronze_sfcc_cust
-      schema:
-        enforcement: flexible
-        type_casting:
-          customer_id: "BIGINT"
-          first_name: "STRING"
-          last_name: "STRING"
-          email: "STRING"
-          phone: "STRING"
-          dob: "DATE"
-          segment: "STRING"
-          status: "STRING"
-          created_at: "TIMESTAMP"
-          updated_at: "TIMESTAMP"
-          last_update_dttm: "TIMESTAMP"
+    source: v_bronze_sfcc_cust
+    enforcement: permissive
+    schema_inline: |
+      columns:
+        - "customer_id -> customer_id: BIGINT"
+        - "first_name -> first_name: STRING"
+        - "last_name -> last_name: STRING"
+        - "email -> email: STRING"
+        - "phone -> phone: STRING"
+        - "dob -> dob: DATE"
+        - "segment -> segment: STRING"
+        - "status -> status: STRING"
+        - "created_at -> created_at: TIMESTAMP"
+        - "updated_at -> updated_at: TIMESTAMP"
+        - "last_update_dttm -> last_update_dttm: TIMESTAMP"
     target: v_customer_standardized
     readMode: stream
     description: "Apply type casting to customer data (keep original column names)"

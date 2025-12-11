@@ -1,0 +1,10 @@
+pipeline: bronze_sap
+flowgroup: sap_prch_ord_bckord_bronze_TMPL004
+job_name: SAP_SFCC
+
+use_template: TMPL004_raw_to_bronze_standard_template
+template_parameters:
+  raw_table_name: raw_sap_prch_ord_bckord
+  bronze_table_name: bronze_sap_prch_ord_bckord
+
+

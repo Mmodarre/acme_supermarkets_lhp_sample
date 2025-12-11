@@ -23,10 +23,10 @@ parameters:
     required: true
     description: "Primary key columns for the dimension"
   
-  - name: type_casting
-    type: object
+  - name: schema_file
+    type: string
     required: true
-    description: "Column name to data type mapping for schema transform"
+    description: "Path to schema transform file (relative to project root, e.g., 'schema_transforms/dimensions/SAP/product_schema.yaml')"
   
   - name: track_history_except
     type: array

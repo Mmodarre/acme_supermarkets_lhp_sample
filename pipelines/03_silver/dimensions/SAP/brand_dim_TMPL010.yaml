@@ -1,0 +1,21 @@
+# Brand dimension with SCD Type 2
+# Uses silver_dimension_scd2_external_schema_template
+
+pipeline: silver_dimensions_sap
+flowgroup: brand_dim_TMPL010
+job_name: SAP_SFCC
+
+use_template: TMPL010_silver_dimension_scd2_external_schema_template
+template_parameters:
+  table_name: brand
+  source_system: sap
+  source_table: bronze_sap_brand
+  primary_keys:
+    - "brand_id"
+  sequence_by: "last_update_dttm"
+  schema_file: "schemas/silver/dimensions/brand_schema.yaml"
+  track_history_except:
+    - "_processing_timestamp"
+    - "_source_file_path"
+    - "last_update_dttm"
+

@@ -1,0 +1,7 @@
+columns:
+  - "shipment_id: BIGINT"
+  - "warehouse_id: BIGINT"
+  - "transfer_id: BIGINT"
+  - "shipped_at: TIMESTAMP"
+  - "status: STRING"
+  - "last_update_dttm: TIMESTAMP"

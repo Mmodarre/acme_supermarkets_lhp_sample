@@ -1,0 +1,9 @@
+columns:
+  - "payment_id: BIGINT"
+  - "txn_id: BIGINT"
+  - "method_id: BIGINT"
+  - "amount: DECIMAL(10,2)"
+  - "auth_code: STRING"
+  - "captured_at: TIMESTAMP"
+  - "payment_details: STRING"
+  - "last_update_dttm: TIMESTAMP"

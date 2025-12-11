@@ -1,0 +1,6 @@
+columns:
+  - "method_id: BIGINT"
+  - "code: STRING"
+  - "name: STRING"
+  - "is_active: BOOLEAN"
+  - "last_update_dttm: TIMESTAMP"

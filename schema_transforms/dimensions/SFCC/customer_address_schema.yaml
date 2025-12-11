@@ -1,0 +1,12 @@
+columns:
+  - "address_id: BIGINT"
+  - "customer_id: BIGINT"
+  - "line1: STRING"
+  - "line2: STRING"
+  - "city: STRING"
+  - "state: STRING"
+  - "postcode: STRING"
+  - "country: STRING"
+  - "is_default_shipping: BOOLEAN"
+  - "is_default_billing: BOOLEAN"
+  - "last_update_dttm: TIMESTAMP"

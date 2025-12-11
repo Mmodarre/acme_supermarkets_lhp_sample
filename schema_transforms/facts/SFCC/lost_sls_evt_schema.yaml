@@ -1,0 +1,12 @@
+columns:
+  - "event_id: BIGINT"
+  - "event_date: TIMESTAMP"
+  - "event_type: STRING"
+  - "location_id: BIGINT"
+  - "product_id: BIGINT"
+  - "lost_qty: BIGINT"
+  - "estimated_value: DECIMAL(10,2)"
+  - "source_ref: STRING"
+  - "last_update_dttm: TIMESTAMP"
+
+

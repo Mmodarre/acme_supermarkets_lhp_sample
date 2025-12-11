@@ -1,0 +1,14 @@
+columns:
+  - "backorder_id: BIGINT"
+  - "po_line_id: BIGINT"
+  - "product_id: BIGINT"
+  - "vendor_id: BIGINT"
+  - "ordered_qty: BIGINT"
+  - "fulfilled_qty: BIGINT"
+  - "unfulfilled_qty: BIGINT"
+  - "requested_date: DATE"
+  - "expected_fulfillment_date: DATE"
+  - "fulfilled_date -> fulfillment_date : DATE"
+  - "status: STRING"
+  - "last_update_dttm: TIMESTAMP"
+

@@ -1,0 +1,10 @@
+columns:
+  - "supplier_brand_id: BIGINT"
+  - "vendor_id: BIGINT"
+  - "brand_id: BIGINT"
+  - "is_primary: BOOLEAN"
+  - "created_at: TIMESTAMP"
+  - "updated_at: TIMESTAMP"
+  - "last_update_dttm: TIMESTAMP"
+
+

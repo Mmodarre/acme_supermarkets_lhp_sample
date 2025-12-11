@@ -1,0 +1,12 @@
+columns:
+  - "vehicle_id: BIGINT"
+  - "vehicle_registration: STRING"
+  - "vehicle_type: STRING"
+  - "home_location_id: BIGINT"
+  - "capacity_orders: BIGINT"
+  - "status: STRING"
+  - "created_at: TIMESTAMP"
+  - "updated_at: TIMESTAMP"
+  - "last_update_dttm: TIMESTAMP"
+
+

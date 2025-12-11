@@ -1,0 +1,6 @@
+columns:
+  - "carrier_id: BIGINT"
+  - "name: STRING"
+  - "contact_info: STRING"
+  - "status: STRING"
+  - "last_update_dttm: TIMESTAMP"

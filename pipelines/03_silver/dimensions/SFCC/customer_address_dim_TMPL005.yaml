@@ -3,6 +3,7 @@
 
 pipeline: silver_dimensions_sfcc
 flowgroup: customer_address_dim_TMPL005
+job_name: SAP_SFCC
 
 use_template: TMPL005_silver_dimension_scd2_template
 template_parameters:
@@ -12,18 +13,7 @@ template_parameters:
   primary_keys:
     - "address_id"
   sequence_by: "last_update_dttm"
-  type_casting:
-    address_id: "BIGINT"
-    customer_id: "BIGINT"
-    line1: "STRING"
-    line2: "STRING"
-    city: "STRING"
-    state: "STRING"
-    postcode: "STRING"
-    country: "STRING"
-    is_default_shipping: "BOOLEAN"
-    is_default_billing: "BOOLEAN"
-    last_update_dttm: "TIMESTAMP"
+  schema_file: "schema_transforms/dimensions/SFCC/customer_address_schema.yaml"
   track_history_except:
     - "_processing_timestamp"
     - "_source_file_path"

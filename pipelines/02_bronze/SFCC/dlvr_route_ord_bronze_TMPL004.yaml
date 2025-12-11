@@ -1,0 +1,10 @@
+pipeline: bronze_sfcc
+flowgroup: sfcc_dlvr_route_ord_bronze_TMPL004
+job_name: SAP_SFCC
+
+use_template: TMPL004_raw_to_bronze_standard_template
+template_parameters:
+  raw_table_name: raw_sfcc_dlvr_route_ord
+  bronze_table_name: bronze_sfcc_dlvr_route_ord
+
+

@@ -4,7 +4,7 @@ version: "1.0"
 description: "Acme Supermarkets Data Pipeline"
 author: "Mehdi Modarressi"
 created_date: "2025-10-15T13:34:54.907474"
-required_lhp_version: ">=0.5.0,<0.7.0"
+#required_lhp_version: ">=0.5.0,<0.8.0"
 
 # Optional: Enforce LakehousePlumber version requirements
 # Ensures consistent code generation across development and CI environments

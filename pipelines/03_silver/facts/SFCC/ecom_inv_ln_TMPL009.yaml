@@ -1,0 +1,16 @@
+# Ecommerce Invoice Line - Transactional Fact
+# Uses silver_transactional_fact_template
+
+pipeline: silver_facts_sfcc
+flowgroup: ecom_inv_ln_silver_TMPL009
+job_name: SAP_SFCC
+
+use_template: TMPL009_silver_transactional_fact_template
+template_parameters:
+  table_name: ecom_inv_ln
+  source_system: sfcc
+  source_table: bronze_sfcc_ecom_inv_ln
+  schema_file: "schema_transforms/facts/SFCC/ecom_inv_ln_schema.yaml"
+
+
+

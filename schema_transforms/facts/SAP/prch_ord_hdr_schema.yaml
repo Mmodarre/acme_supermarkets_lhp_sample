@@ -1,0 +1,9 @@
+columns:
+  - "po_id: BIGINT"
+  - "vendor_id: BIGINT"
+  - "ship_to_location_id: BIGINT"
+  - "order_date: DATE"
+  - "expected_date: DATE"
+  - "currency: STRING"
+  - "status: STRING"
+  - "last_update_dttm: TIMESTAMP"

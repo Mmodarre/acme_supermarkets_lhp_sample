@@ -1,0 +1,16 @@
+# Warehouse Receipt - Transactional Fact
+# Uses silver_transactional_fact_template
+
+pipeline: silver_facts_sap
+flowgroup: whse_rcpt_silver_TMPL009
+job_name: SAP_SFCC
+
+use_template: TMPL009_silver_transactional_fact_template
+template_parameters:
+  table_name: whse_rcpt
+  source_system: sap
+  source_table: bronze_sap_whse_rcpt
+  schema_file: "schema_transforms/facts/SAP/whse_rcpt_schema.yaml"
+
+
+

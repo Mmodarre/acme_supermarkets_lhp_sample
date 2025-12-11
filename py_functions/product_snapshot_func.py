@@ -1,6 +1,6 @@
 
 from typing import Optional, Tuple
-from pyspark.sql.functions import current_timestamp
+from pyspark.sql.functions import current_timestamp, when, col, regexp_extract, lit
 from pyspark.sql import DataFrame
 
 
@@ -19,11 +19,23 @@ def next_product_snapshot_and_version(
         or None if no more snapshots are available to process
     """
 
+    # Load bronze table
     df = spark.sql("""
-                    SELECT *, 
-                    regexp_extract(_source_file_path, '(\\\\d{4}-\\\\d{2}-\\\\d{2})', 1) as _snapshot_date
+                    SELECT *
                     FROM {catalog}.{bronze_schema}.bronze_sap_prd
                    """)
+    
+    # Extract date from file path, handling HIST_ prefix
+    # HIST_ files should be assigned to 2000-01-01 (historical baseline)
+    df = df.withColumn(
+        "_snapshot_date",
+        when(
+            col("_source_file_path").contains("HIST_"),
+            lit("2000-01-01")
+        ).otherwise(
+            regexp_extract(col("_source_file_path"), r"(\d{4}-\d{2}-\d{2})", 1)
+        )
+    )
 
     df.createOrReplaceTempView("bronze_sap_prd_snapshot")
 

@@ -1,0 +1,30 @@
+# Warehouse Shipment Header - Accumulating Snapshot Fact with Dual Tables
+# Uses silver_accumulating_fact_template
+
+pipeline: silver_facts_sap
+flowgroup: whse_shpmt_hdr_silver_TMPL007
+job_name: SAP_SFCC
+
+use_template: TMPL007_silver_accumulating_fact_template
+template_parameters:
+  table_name: whse_shpmt_hdr
+  source_system: sap
+  source_table: brz_sap_whse_shpmt_hdr
+  primary_keys:
+    - "shipment_id"
+  schema_file: "schema_transforms/facts/SAP/warehouse_shipment_hdr_schema.yaml"
+  track_history_except:
+    - "_processing_timestamp"
+    - "_source_file_path"
+    - "last_update_dttm"
+  status_column: status
+  status_values:
+    - "shipped"
+  sequence_by: "last_update_dttm"
+  group_by_columns:
+    - "shipment_id"
+    - "warehouse_id"
+  additional_columns:
+    - "transfer_id"
+    - "shipped_at"
+

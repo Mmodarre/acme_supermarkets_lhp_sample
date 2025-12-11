@@ -1,0 +1,108 @@
+version: 0.1
+
+source: acme_supermarkets.edw_gold.fact_transfer_orders
+
+joins:
+  - name: dim_warehouse
+    source: acme_supermarkets.edw_gold.dim_warehouse
+    'on': source.source_warehouse_key = dim_warehouse.warehouse_id
+  
+  - name: dim_location
+    source: acme_supermarkets.edw_gold.dim_location
+    'on': source.destination_location_key = dim_location.location_id
+  
+  - name: dim_product
+    source: acme_supermarkets.edw_gold.dim_product
+    'on': source.product_key = dim_product.product_id
+  
+  - name: dim_date
+    source: acme_supermarkets.edw_gold.dim_date
+    'on': source.created_date_key = dim_date.date_key
+
+filter: dim_location.is_current = TRUE AND dim_product.is_current = TRUE
+
+dimensions:
+  - name: Source Warehouse
+    expr: dim_warehouse.warehouse_name
+  
+  - name: Source Warehouse City
+    expr: dim_warehouse.city
+  
+  - name: Source Warehouse Region
+    expr: dim_warehouse.region
+  
+  - name: Destination Location
+    expr: dim_location.location_name
+  
+  - name: Destination Type
+    expr: dim_location.location_type
+  
+  - name: Destination Region
+    expr: dim_location.region
+  
+  - name: Product Name
+    expr: dim_product.product_name
+  
+  - name: Product Category
+    expr: dim_product.category_name
+  
+  - name: Product Brand
+    expr: dim_product.brand_name
+  
+  - name: Transfer Month
+    expr: DATE_TRUNC('MONTH', dim_date.full_date)
+  
+  - name: Transfer Year
+    expr: dim_date.year
+  
+  - name: Transfer Status
+    expr: transfer_status
+
+measures:
+  - name: Total Transfer Orders
+    expr: COUNT(DISTINCT transfer_id)
+  
+  - name: Total Transfer Lines
+    expr: COUNT(*)
+  
+  - name: Total Units Transferred
+    expr: SUM(transfer_quantity)
+  
+  - name: Transfer Value
+    expr: SUM(transfer_value_at_cost)
+  
+  - name: Average Cycle Time Days
+    expr: AVG(total_cycle_time_days)
+  
+  - name: Store Replenishment Cycle Time
+    expr: >
+      AVG(CASE 
+        WHEN dim_location.location_type = 'Store' 
+        THEN total_cycle_time_days 
+      END)
+  
+  - name: On-Time Transfer Count
+    expr: COUNT(CASE WHEN is_on_time_delivery = TRUE THEN 1 END)
+  
+  - name: On-Time Transfer Percentage
+    expr: >
+      COUNT(CASE WHEN is_on_time_delivery = TRUE THEN 1 END) * 100.0 / 
+      NULLIF(COUNT(CASE WHEN is_received = TRUE THEN 1 END), 0)
+  
+  - name: Transfer Fill Rate
+    expr: >
+      COUNT(CASE WHEN is_completed = TRUE THEN 1 END) * 100.0 / 
+      NULLIF(COUNT(*), 0)
+  
+  - name: Warehouse Transfer Efficiency
+    expr: >
+      (COUNT(CASE WHEN is_completed = TRUE THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0)) * 
+      (COUNT(CASE WHEN is_on_time_delivery = TRUE THEN 1 END) * 100.0 / NULLIF(COUNT(CASE WHEN is_received = TRUE THEN 1 END), 0)) / 
+      100.0
+  
+  - name: Average Units per Transfer
+    expr: SUM(transfer_quantity) / NULLIF(COUNT(DISTINCT transfer_id), 0)
+  
+  - name: Transfer Cost per Unit
+    expr: SUM(transfer_value_at_cost) / NULLIF(SUM(transfer_quantity), 0)
+

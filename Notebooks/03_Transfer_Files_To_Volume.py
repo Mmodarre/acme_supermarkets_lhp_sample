@@ -7,6 +7,7 @@
 # MAGIC
 # MAGIC **Features:**
 # MAGIC - Incremental processing (one date at a time per folder)
+# MAGIC - **Parallel processing** support (process multiple folders concurrently)
 # MAGIC - Progress tracking via Delta table
 # MAGIC - Handles multiple file patterns:
 # MAGIC   - Direct files: `table/YYYY-MM-DD_file.ext`
@@ -33,12 +34,13 @@
 # COMMAND ----------
 
 # DBTITLE 1,Create Widgets
-dbutils.widgets.text("source_volume_path", "/Volumes/main/acme_retail/raw_exports", "Source Volume Path")
-dbutils.widgets.text("target_volume_path", "/Volumes/main/acme_retail/landing", "Target Volume Path")
-dbutils.widgets.text("tracking_catalog", "main", "Tracking Table Catalog")
-dbutils.widgets.text("tracking_schema", "acme_retail", "Tracking Table Schema")
+dbutils.widgets.text("source_volume_path", "/Volumes/acme_supermarkets/edw_raw/arrival", "Source Volume Path")
+dbutils.widgets.text("target_volume_path", "/Volumes/acme_supermarkets/edw_raw/landing", "Target Volume Path")
+dbutils.widgets.text("tracking_catalog", "acme_supermarkets", "Tracking Table Catalog")
+dbutils.widgets.text("tracking_schema", "_meta", "Tracking Table Schema")
 dbutils.widgets.dropdown("restart", "false", ["false", "true"], "Restart from Beginning")
 dbutils.widgets.text("date_limit", "", "Optional: Process only this specific date (YYYY-MM-DD)")
+dbutils.widgets.dropdown("max_workers", "4", ["1", "2", "4", "8", "16"], "Max Parallel Workers (1=sequential)")
 
 # COMMAND ----------
 
@@ -49,6 +51,7 @@ tracking_catalog = dbutils.widgets.get("tracking_catalog")
 tracking_schema = dbutils.widgets.get("tracking_schema")
 restart = dbutils.widgets.get("restart").lower() == "true"
 date_limit = dbutils.widgets.get("date_limit").strip()
+max_workers = int(dbutils.widgets.get("max_workers"))
 
 print(f"Configuration:")
 print(f"  Source Volume: {source_volume_path}")
@@ -57,6 +60,7 @@ print(f"  Tracking Catalog: {tracking_catalog}")
 print(f"  Tracking Schema: {tracking_schema}")
 print(f"  Restart: {restart}")
 print(f"  Date Limit: {date_limit if date_limit else 'None (process next available)'}")
+print(f"  Max Workers: {max_workers} {'(sequential)' if max_workers == 1 else '(parallel)'}")
 
 # COMMAND ----------
 
@@ -72,6 +76,8 @@ from datetime import datetime, date
 import re
 from typing import List, Dict, Optional, Tuple
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
 
 # Initialize Spark
 spark = SparkSession.builder.getOrCreate()
@@ -99,6 +105,57 @@ table_schema = StructType([
 
 # COMMAND ----------
 
+def cleanup_target_volume(target_path: str):
+    """
+    Delete all subdirectories and files from the target volume.
+    
+    This function is used when restart=True to ensure a clean slate
+    for the file transfer process. The root volume path itself is preserved.
+    
+    Args:
+        target_path: Target volume path to clean up
+    """
+    try:
+        print(f"🧹 Cleaning up target volume: {target_path}")
+
+        # List all items in target volume
+        items = dbutils.fs.ls(target_path)
+
+        if not items:
+            print("  ℹ️  Target volume is already empty")
+            return
+
+        deleted_count = 0
+        error_count = 0
+
+        # Delete each subdirectory/file
+        for item in items:
+            # Skip hidden files/folders (starting with .)
+            if item.name.startswith('.'):
+                continue
+
+            try:
+                dbutils.fs.rm(item.path, recurse=True)
+                print(f"  ✓ Deleted: {item.name}")
+                deleted_count += 1
+            except Exception as e:
+                print(f"  ❌ Failed to delete {item.name}: {e}")
+                error_count += 1
+
+        print(f"✅ Cleanup complete: {deleted_count} item(s) deleted")
+        if error_count > 0:
+            print(f"⚠️  {error_count} item(s) failed to delete")
+
+    except Exception as e:
+        # Handle case where target volume doesn't exist or is inaccessible
+        if "FileNotFoundException" in str(e) or "does not exist" in str(e).lower():
+            print(f"  ℹ️  Target volume does not exist yet or is empty")
+        else:
+            print(f"❌ Error during cleanup: {e}")
+            raise
+
+# COMMAND ----------
+
 # DBTITLE 1,Initialize Tracking Table
 def initialize_tracking_table(recreate: bool = False):
     """
@@ -111,6 +168,9 @@ def initialize_tracking_table(recreate: bool = False):
         print(f"🔄 Dropping existing tracking table: {tracking_table}")
         spark.sql(f"DROP TABLE IF EXISTS {tracking_table}")
 
+    # Clean up target volume if restart is requested
+        cleanup_target_volume(target_volume_path)
+        print(f"✅ Target volume cleaned up: {target_volume_path}")
     # Create table if it doesn't exist
     create_sql = f"""
     CREATE TABLE IF NOT EXISTS {tracking_table} (
@@ -130,6 +190,7 @@ def initialize_tracking_table(recreate: bool = False):
 
     spark.sql(create_sql)
     print(f"✅ Tracking table ready: {tracking_table}")
+
 
 # Initialize table
 initialize_tracking_table(recreate=restart)
@@ -159,6 +220,7 @@ def get_export_folders(base_path: str) -> List[str]:
     except Exception as e:
         print(f"❌ Error listing folders: {e}")
         return []
+
 
 # COMMAND ----------
 
@@ -231,10 +293,14 @@ def get_files_for_date(folder_path: str, folder_name: str, target_date: date) ->
                     sub_items = dbutils.fs.ls(item.path)
                     for sub_item in sub_items:
                         if sub_item.isFile():
-                            files.append((sub_item.path, sub_item.size))
+                            # Normalize path by removing dbfs: prefix if present
+                            clean_path = sub_item.path.replace("dbfs:", "") if sub_item.path.startswith("dbfs:") else sub_item.path
+                            files.append((clean_path, sub_item.size))
                 elif item.isFile():
                     # Direct file with date
-                    files.append((item.path, item.size))
+                    # Normalize path by removing dbfs: prefix if present
+                    clean_path = item.path.replace("dbfs:", "") if item.path.startswith("dbfs:") else item.path
+                    files.append((clean_path, item.size))
 
         return files
 
@@ -425,6 +491,78 @@ def update_tracking(simulation_date: date, date_stats: Dict):
 
 # COMMAND ----------
 
+# DBTITLE 1,Process Single Folder for Date
+def process_single_folder_for_date(
+    folder_name: str, 
+    target_date: date,
+    source_path: str
+) -> Dict:
+    """
+    Process a single folder for a specific simulation date.
+    
+    This function is designed to be thread-safe for parallel execution.
+    
+    Args:
+        folder_name: Name of the folder to process
+        target_date: The simulation date to process
+        source_path: Base source volume path
+        
+    Returns:
+        Dictionary with processing results:
+            - folder_name: str
+            - has_files: bool (True if folder had files for this date)
+            - files_transferred: int
+            - bytes_transferred: int
+            - errors: List[str]
+    """
+    result = {
+        'folder_name': folder_name,
+        'has_files': False,
+        'files_transferred': 0,
+        'bytes_transferred': 0,
+        'errors': []
+    }
+    
+    folder_path = f"{source_path}/{folder_name}"
+    
+    try:
+        # Get available dates in this folder
+        available_dates = extract_dates_from_folder(folder_path, folder_name)
+        
+        # Check if folder has files for target_date
+        if target_date not in available_dates:
+            print(f"  ⏭️  {folder_name}: Skipped (no files for {target_date})")
+            return result
+        
+        # Get files for target_date
+        files = get_files_for_date(folder_path, folder_name, target_date)
+        
+        if not files:
+            print(f"  ⏭️  {folder_name}: Skipped (no files found)")
+            return result
+        
+        result['has_files'] = True
+        print(f"  📄 {folder_name}: {len(files)} file(s) found")
+        
+        # Transfer files for this folder
+        transfer_stats = transfer_files_for_date(folder_name, folder_path, target_date, files)
+        
+        # Update result
+        result['files_transferred'] = transfer_stats['transferred']
+        result['bytes_transferred'] = transfer_stats['bytes']
+        result['errors'] = transfer_stats['errors']
+        
+        print(f"  ✅ {folder_name}: {transfer_stats['transferred']} file(s) transferred ({transfer_stats['bytes']:,} bytes)")
+        
+    except Exception as e:
+        error_msg = f"{folder_name}: Unexpected error - {str(e)}"
+        result['errors'].append(error_msg)
+        print(f"  ❌ {error_msg}")
+    
+    return result
+
+# COMMAND ----------
+
 # DBTITLE 1,Process All Folders for Simulation Date
 def process_all_folders(specific_date: Optional[str] = None):
     """
@@ -485,41 +623,55 @@ def process_all_folders(specific_date: Optional[str] = None):
         'errors': []
     }
 
-    # 4. Process each folder for THIS simulation date
-    for folder_name in folders:
-        folder_path = f"{source_volume_path}/{folder_name}"
-
-        # Get available dates in this folder
-        available_dates = extract_dates_from_folder(folder_path, folder_name)
-
-        # Check if folder has files for target_date
-        if target_date not in available_dates:
-            print(f"  ⏭️  {folder_name}: Skipped (no files for {target_date})")
-            date_stats['folders_skipped'] += 1
-            continue
-
-        # Get files for target_date
-        files = get_files_for_date(folder_path, folder_name, target_date)
-
-        if not files:
-            print(f"  ⏭️  {folder_name}: Skipped (no files found)")
-            date_stats['folders_skipped'] += 1
-            continue
-
-        print(f"  📄 {folder_name}: {len(files)} file(s) found")
-
-        # Transfer files for this folder
-        transfer_stats = transfer_files_for_date(folder_name, folder_path, target_date, files)
-
-        # Update date-level stats
-        date_stats['folders_with_files'] += 1
-        date_stats['total_files_transferred'] += transfer_stats['transferred']
-        date_stats['total_bytes_transferred'] += transfer_stats['bytes']
-
-        if transfer_stats['errors']:
-            date_stats['errors'].extend(transfer_stats['errors'])
-
-        print(f"  ✅ {folder_name}: {transfer_stats['transferred']} file(s) transferred ({transfer_stats['bytes']:,} bytes)")
+    # 4. Process each folder for THIS simulation date (sequential or parallel)
+    if max_workers == 1:
+        # Sequential processing (original behavior)
+        print(f"  🔄 Processing folders sequentially...")
+        for folder_name in folders:
+            result = process_single_folder_for_date(folder_name, target_date, source_volume_path)
+            
+            # Update date-level stats
+            if result['has_files']:
+                date_stats['folders_with_files'] += 1
+                date_stats['total_files_transferred'] += result['files_transferred']
+                date_stats['total_bytes_transferred'] += result['bytes_transferred']
+            else:
+                date_stats['folders_skipped'] += 1
+            
+            if result['errors']:
+                date_stats['errors'].extend(result['errors'])
+    else:
+        # Parallel processing using ThreadPoolExecutor
+        print(f"  ⚡ Processing folders in parallel (max {max_workers} workers)...")
+        
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Submit all folder processing tasks
+            future_to_folder = {
+                executor.submit(process_single_folder_for_date, folder_name, target_date, source_volume_path): folder_name
+                for folder_name in folders
+            }
+            
+            # Collect results as they complete
+            for future in as_completed(future_to_folder):
+                folder_name = future_to_folder[future]
+                try:
+                    result = future.result()
+                    
+                    # Update date-level stats (thread-safe since we're collecting sequentially)
+                    if result['has_files']:
+                        date_stats['folders_with_files'] += 1
+                        date_stats['total_files_transferred'] += result['files_transferred']
+                        date_stats['total_bytes_transferred'] += result['bytes_transferred']
+                    else:
+                        date_stats['folders_skipped'] += 1
+                    
+                    if result['errors']:
+                        date_stats['errors'].extend(result['errors'])
+                        
+                except Exception as e:
+                    print(f"  ❌ Exception processing {folder_name}: {e}")
+                    date_stats['folders_skipped'] += 1
+                    date_stats['errors'].append(f"{folder_name}: {str(e)}")
 
     # 5. Determine overall status
     if date_stats['errors']:
@@ -649,8 +801,9 @@ display(spark.sql(f"""
 # MAGIC 1. Set `source_volume_path` to source volume containing export files
 # MAGIC 2. Set `target_volume_path` to destination volume
 # MAGIC 3. Set `restart=true` to create tracking table
-# MAGIC 4. Run notebook - processes first date from each folder
-# MAGIC 5. Check tracking table for results
+# MAGIC 4. Set `max_workers` to control parallelism (1=sequential, 4=recommended, 8=aggressive)
+# MAGIC 5. Run notebook - processes first date from each folder
+# MAGIC 6. Check tracking table for results
 # MAGIC
 # MAGIC ### Subsequent Runs
 # MAGIC 1. Set `restart=false` (default)
@@ -667,6 +820,18 @@ display(spark.sql(f"""
 # MAGIC - Folders without files for the current simulation date are **skipped** (not an error)
 # MAGIC - Example: On 2024-01-02, product_csv is skipped because it only has weekly files
 # MAGIC - All folders stay synchronized - no folder advances ahead of others
+# MAGIC
+# MAGIC ### Parallel Processing
+# MAGIC - **max_workers=1**: Sequential processing (original behavior, safest)
+# MAGIC - **max_workers=4**: Recommended for most cases (4 concurrent folder transfers)
+# MAGIC - **max_workers=8**: Aggressive parallelism (use if you have many folders and good I/O)
+# MAGIC - **max_workers=16**: Maximum parallelism (only for very large datasets)
+# MAGIC
+# MAGIC **Performance Tips:**
+# MAGIC - Start with max_workers=4 and increase if needed
+# MAGIC - Higher values may not always be faster (I/O bottlenecks, network limits)
+# MAGIC - Use max_workers=1 for debugging or troubleshooting
+# MAGIC - Parallel processing is thread-safe and properly handles errors per folder
 # MAGIC
 # MAGIC ### Monitor Progress
 # MAGIC - Check "View Tracking Table" section to see history by simulation date

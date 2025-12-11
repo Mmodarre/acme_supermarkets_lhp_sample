@@ -1,5 +1,6 @@
 pipeline: bronze_ncr
 flowgroup: pos_trx_header_lines_payment_bronze
+job_name: NCR
 
 actions:
   - name: pos_trx_raw_load

@@ -1,0 +1,6 @@
+columns:
+  - "warehouse_id: BIGINT"
+  - "name: STRING"
+  - "location_id: BIGINT"
+  - "status: STRING"
+  - "last_update_dttm: TIMESTAMP"

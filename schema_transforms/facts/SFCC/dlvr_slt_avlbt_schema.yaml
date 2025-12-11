@@ -1,0 +1,13 @@
+columns:
+  - "availability_id: BIGINT"
+  - "slot_template_id: BIGINT"
+  - "delivery_date: DATE"
+  - "delivery_store_id: BIGINT"
+  - "bookings_count: BIGINT"
+  - "capacity_remaining: BIGINT"
+  - "status: STRING"
+  - "created_at: TIMESTAMP"
+  - "updated_at: TIMESTAMP"
+  - "last_update_dttm: TIMESTAMP"
+
+

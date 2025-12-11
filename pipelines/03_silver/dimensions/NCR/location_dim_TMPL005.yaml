@@ -3,6 +3,7 @@
 
 pipeline: silver_dimensions_ncr
 flowgroup: location_dim_TMPL005
+job_name: NCR
 
 use_template: TMPL005_silver_dimension_scd2_template
 template_parameters:
@@ -12,18 +13,7 @@ template_parameters:
   primary_keys:
     - "location_id"
   sequence_by: "last_update_dttm"
-  type_casting:
-    location_id: "BIGINT"
-    location_type: "STRING"
-    name: "STRING"
-    address_line1: "STRING"
-    address_line2: "STRING"
-    city: "STRING"
-    state: "STRING"
-    zip_code: "STRING"
-    country: "STRING"
-    status: "STRING"
-    last_update_dttm: "TIMESTAMP"
+  schema_file: "schema_transforms/dimensions/NCR/location_schema.yaml"
   track_history_except:
     - "_processing_timestamp"
     - "_source_file_path"

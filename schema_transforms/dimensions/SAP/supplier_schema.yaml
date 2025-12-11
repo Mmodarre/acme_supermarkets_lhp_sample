@@ -1,0 +1,9 @@
+columns:
+  - "vendor_id: BIGINT"
+  - "name: STRING"
+  - "tax_id: STRING"
+  - "payment_terms_id: BIGINT"
+  - "status: STRING"
+  - "created_at: TIMESTAMP"
+  - "updated_at: TIMESTAMP"
+  - "last_update_dttm: TIMESTAMP"

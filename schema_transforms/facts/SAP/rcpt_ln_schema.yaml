@@ -1,0 +1,8 @@
+columns:
+  - "grn_line_id: BIGINT"
+  - "grn_id: BIGINT"
+  - "po_line_id: BIGINT"
+  - "product_id: BIGINT"
+  - "received_qty: BIGINT"
+  - "rejected_qty: BIGINT"
+  - "last_update_dttm: TIMESTAMP"

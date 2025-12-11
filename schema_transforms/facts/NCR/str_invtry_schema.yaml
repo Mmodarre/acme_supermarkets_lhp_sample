@@ -1,0 +1,9 @@
+columns:
+  - "store_inventory_id: BIGINT"
+  - "store_id: BIGINT"
+  - "product_id: BIGINT"
+  - "on_hand_qty: BIGINT"
+  - "reserved_qty: BIGINT"
+  - "safety_stock_qty: BIGINT"
+  - "reorder_point: BIGINT"
+  - "last_update_dttm: TIMESTAMP"

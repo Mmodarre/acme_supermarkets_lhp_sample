@@ -1,0 +1,19 @@
+columns:
+  - "invoice_line_id: BIGINT"
+  - "invoice_id: BIGINT"
+  - "order_line_id: BIGINT"
+  - "line_number: BIGINT"
+  - "product_id: BIGINT"
+  - "product_sku: STRING"
+  - "product_name: STRING"
+  - "product_category: STRING"
+  - "qty: BIGINT"
+  - "unit_price: DECIMAL(10,2)"
+  - "discount_amount: DECIMAL(10,2)"
+  - "is_gst_free: BOOLEAN"
+  - "gst_rate: DECIMAL(5,2)"
+  - "gst_amount: DECIMAL(10,2)"
+  - "line_total: DECIMAL(10,2)"
+  - "last_update_dttm: TIMESTAMP"
+
+

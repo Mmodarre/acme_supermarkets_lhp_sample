@@ -18,10 +18,10 @@ parameters:
     required: true
     description: "Bronze table name (e.g., 'brz_sap_prch_ord_ln')"
   
-  - name: type_casting
-    type: object
+  - name: schema_file
+    type: string
     required: true
-    description: "Column name to data type mapping for schema transform"
+    description: "Path to schema transform file (relative to project root, e.g., 'schema_transforms/facts/NCR/pos_txn_ln_schema.yaml')"
 
 actions:
   # Step 1: Load from bronze layer
@@ -39,11 +39,9 @@ actions:
   - name: "transform_{{ table_name }}_schema"
     type: transform
     transform_type: schema
-    source:
-      view: "v_{{ table_name }}_bronze"
-      schema:
-        enforcement: flexible
-        type_casting: "{{ type_casting }}"
+    source: "v_{{ table_name }}_bronze"
+    schema_file: "{{ schema_file }}"
+    enforcement: permissive
     target: "v_{{ table_name }}_standardized"
     readMode: stream
     description: "Apply type casting to {{ table_name }} (keep original column names)"

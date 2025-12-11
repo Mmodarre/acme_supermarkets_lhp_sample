@@ -1,5 +1,6 @@
 pipeline: bronze_sap
 flowgroup: purchase_orders_bronze
+job_name: SAP_SFCC
 
 actions:
   - name: purchase_orders_raw_load

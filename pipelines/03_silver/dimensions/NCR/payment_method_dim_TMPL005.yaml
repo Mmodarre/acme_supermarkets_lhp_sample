@@ -3,6 +3,7 @@
 
 pipeline: silver_dimensions_ncr
 flowgroup: payment_method_dim_TMPL005
+job_name: NCR
 
 use_template: TMPL005_silver_dimension_scd2_template
 template_parameters:
@@ -12,12 +13,7 @@ template_parameters:
   primary_keys:
     - "method_id"
   sequence_by: "last_update_dttm"
-  type_casting:
-    method_id: "BIGINT"
-    code: "STRING"
-    name: "STRING"
-    is_active: "BOOLEAN"
-    last_update_dttm: "TIMESTAMP"
+  schema_file: "schema_transforms/dimensions/NCR/payment_method_schema.yaml"
   track_history_except:
     - "_processing_timestamp"
     - "_source_file_path"

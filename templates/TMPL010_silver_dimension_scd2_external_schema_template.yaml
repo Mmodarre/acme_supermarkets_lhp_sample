@@ -1,0 +1,88 @@
+name: TMPL010_silver_dimension_scd2_external_schema_template
+version: "1.0"
+description: "Template for silver layer dimensions with external schema file and SCD Type 2"
+
+parameters:
+  - name: table_name
+    type: string
+    required: true
+    description: "Short name for the dimension (e.g., 'cust', 'sup')"
+  
+  - name: source_system
+    type: string
+    required: true
+    description: "Source system prefix (e.g., 'sfcc', 'sap', 'ncr')"
+  
+  - name: source_table
+    type: string
+    required: true
+    description: "Bronze table name (e.g., 'bronze_sfcc_cust')"
+  
+  - name: primary_keys
+    type: array
+    required: true
+    description: "Primary key columns for the dimension"
+  
+  - name: schema_file
+    type: string
+    required: true
+    description: "Path to external schema file (relative to project root, e.g., 'schemas/silver/dimensions/customer_schema.yaml')"
+  
+  - name: sequence_by
+    type: string
+    required: true
+    default: "last_update_dttm"
+    description: "Column to determine order of changes (e.g., 'last_update_dttm', 'updated_at')"
+  
+  - name: track_history_except
+    type: array
+    required: false
+    default:
+      - "_processing_timestamp"
+      - "_source_file_path"
+      - "last_update_dttm"
+    description: "Columns to exclude from history tracking"
+
+actions:
+  # Step 1: Load from bronze layer
+  - name: "load_bronze_{{ source_system }}_{{ table_name }}"
+    type: load
+    readMode: stream
+    source:
+      type: delta
+      database: "{catalog}.{bronze_schema}"
+      table: "{{ source_table }}"
+    target: "v_bronze_{{ source_system }}_{{ table_name }}"
+    description: "Load {{ table_name }} data from bronze layer"
+    
+  # Step 2: Schema transform using external schema file
+  - name: "transform_{{ table_name }}_schema"
+    type: transform
+    transform_type: schema
+    source: "v_bronze_{{ source_system }}_{{ table_name }}"
+    schema_file: "{{ schema_file }}"
+    target: "v_{{ table_name }}_standardized"
+    readMode: stream
+    description: "Apply schema transformation to {{ table_name }} data using external schema file"
+    
+  # Step 3: Write to dimension table with SCD Type 2
+  - name: "write_{{ table_name }}_dim_scd2"
+    type: write
+    source: "v_{{ table_name }}_standardized"
+    write_target:
+      type: streaming_table
+      database: "{catalog}.{silver_schema}"
+      table: "dim_{{ source_system }}_{{ table_name }}"
+      mode: cdc
+      cdc_config:
+        keys: "{{ primary_keys }}"
+        sequence_by: "{{ sequence_by }}"
+        scd_type: 2
+        track_history_except_column_list: "{{ track_history_except }}"
+      table_properties:
+        delta.enableChangeDataFeed: "true"
+        table.type: "dimension"
+        scd.type: "2"
+    description: "{{ table_name }} dimension with SCD Type 2 - tracks history of all attribute changes except audit columns"
+
+

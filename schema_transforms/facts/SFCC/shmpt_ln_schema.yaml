@@ -1,0 +1,7 @@
+columns:
+  - "shipment_line_id: BIGINT"
+  - "shipment_id: BIGINT"
+  - "order_line_id: BIGINT"
+  - "product_id: BIGINT"
+  - "qty: BIGINT"
+  - "last_update_dttm: TIMESTAMP"

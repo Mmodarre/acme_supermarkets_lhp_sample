@@ -1,0 +1,8 @@
+columns:
+  - "terminal_id: BIGINT"
+  - "store_id: BIGINT"
+  - "name: STRING"
+  - "terminal_number: STRING"
+  - "installed_at: TIMESTAMP"
+  - "status: STRING"
+  - "last_update_dttm: TIMESTAMP"

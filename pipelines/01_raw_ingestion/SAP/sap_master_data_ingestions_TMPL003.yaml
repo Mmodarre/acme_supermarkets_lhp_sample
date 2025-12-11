@@ -1,0 +1,31 @@
+# SAP Master Data Ingestions - Combined Multi-Flowgroup File
+# This file combines supplier, supplier brand, and payment terms ingestions
+# Pipeline variable puts the generate files in the same folder for the pipeline to pick up
+pipeline: raw_ingestions_sap
+job_name: SAP_SFCC
+
+# Use the template to generate the actions for all flowgroups
+# Each flowgroup will use this template with its own parameters
+use_template: TMPL003_parquet_ingestion_template
+
+# Multiple flowgroups defined as an array
+# Each flowgroup represents a separate SAP master data table ingestion
+flowgroups:
+  # Supplier master data ingestion
+  - flowgroup: sup_ingestion_TMPL003
+    template_parameters:
+      table_name: raw_sap_sup
+      landing_folder: supplier
+
+  # Supplier brand master data ingestion
+  - flowgroup: sap_sup_brnd_ingestion_TMPL003
+    template_parameters:
+      table_name: raw_sap_sup_brnd
+      landing_folder: supplier_brand
+
+  # Payment terms master data ingestion
+  - flowgroup: pmt_terms_ingestion_TMPL003
+    template_parameters:
+      table_name: raw_sap_pmt_terms
+      landing_folder: payment_terms
+

@@ -1,0 +1,16 @@
+# Lost Sales Event - Transactional Fact
+# Uses silver_transactional_fact_template
+
+pipeline: silver_facts_sfcc
+flowgroup: lost_sls_evt_silver_TMPL009
+job_name: SAP_SFCC
+
+use_template: TMPL009_silver_transactional_fact_template
+template_parameters:
+  table_name: lost_sls_evt
+  source_system: sfcc
+  source_table: bronze_sfcc_lost_sls_evt
+  schema_file: "schema_transforms/facts/SFCC/lost_sls_evt_schema.yaml"
+
+
+

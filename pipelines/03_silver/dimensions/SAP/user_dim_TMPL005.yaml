@@ -3,6 +3,7 @@
 
 pipeline: silver_dimensions_sap
 flowgroup: user_dim_TMPL005
+job_name: SAP_SFCC
 
 use_template: TMPL005_silver_dimension_scd2_template
 template_parameters:
@@ -12,18 +13,7 @@ template_parameters:
   primary_keys:
     - "user_id"
   sequence_by: "last_update_dttm"
-  type_casting:
-    user_id: "BIGINT"
-    username: "STRING"
-    first_name: "STRING"
-    last_name: "STRING"
-    email: "STRING"
-    role: "STRING"
-    store_id: "BIGINT"
-    status: "STRING"
-    created_at: "TIMESTAMP"
-    updated_at: "TIMESTAMP"
-    last_update_dttm: "TIMESTAMP"
+  schema_file: "schema_transforms/dimensions/SAP/user_schema.yaml"
   track_history_except:
     - "_processing_timestamp"
     - "_source_file_path"

@@ -1,0 +1,23 @@
+# Supplier Brand dimension with SCD Type 2
+# Uses silver_dimension_scd2_template
+
+pipeline: silver_dimensions_sap
+flowgroup: sup_brnd_dim_TMPL005
+job_name: SAP_SFCC
+
+use_template: TMPL005_silver_dimension_scd2_template
+template_parameters:
+  table_name: sup_brnd
+  source_system: sap
+  source_table: bronze_sap_sup_brnd
+  primary_keys:
+    - "supplier_brand_id"
+  sequence_by: "last_update_dttm"
+  schema_file: "schema_transforms/dimensions/SAP/sup_brnd_schema.yaml"
+  track_history_except:
+    - "_processing_timestamp"
+    - "_source_file_path"
+    - "last_update_dttm"
+
+
+

@@ -1,0 +1,40 @@
+# Purchase Order Backorder - Accumulating Snapshot Fact with Dual Tables
+# Uses silver_accumulating_fact_template
+
+pipeline: silver_facts_sap
+flowgroup: prch_ord_bckord_silver_TMPL007
+job_name: SAP_SFCC
+
+use_template: TMPL007_silver_accumulating_fact_template
+template_parameters:
+  table_name: prch_ord_bckord
+  source_system: sap
+  source_table: bronze_sap_prch_ord_bckord
+  primary_keys:
+    - "backorder_id"
+  schema_file: "schema_transforms/facts/SAP/prch_ord_bckord_schema.yaml"
+  track_history_except:
+    - "_processing_timestamp"
+    - "_source_file_path"
+    - "last_update_dttm"
+  status_column: status
+  status_values:
+    - "pending"
+    - "partial"
+    - "fulfilled"
+    - "cancelled"
+  sequence_by: "last_update_dttm"
+  group_by_columns:
+    - "backorder_id"
+    - "po_line_id"
+    - "product_id"
+    - "vendor_id"
+  additional_columns:
+    - "ordered_qty"
+    - "fulfilled_qty"
+    - "unfulfilled_qty"
+    - "requested_date"
+    - "expected_fulfillment_date"
+    - "fulfillment_date"
+
+

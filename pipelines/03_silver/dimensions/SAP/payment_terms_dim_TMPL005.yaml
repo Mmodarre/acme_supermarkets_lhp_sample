@@ -3,6 +3,7 @@
 
 pipeline: silver_dimensions_sap
 flowgroup: payment_terms_dim_TMPL005
+job_name: SAP_SFCC
 
 use_template: TMPL005_silver_dimension_scd2_template
 template_parameters:
@@ -12,12 +13,7 @@ template_parameters:
   primary_keys:
     - "payment_terms_id"
   sequence_by: "last_update_dttm"
-  type_casting:
-    payment_terms_id: "BIGINT"
-    name: "STRING"
-    description: "STRING"
-    days: "BIGINT"
-    last_update_dttm: "TIMESTAMP"
+  schema_file: "schema_transforms/dimensions/SAP/payment_terms_schema.yaml"
   track_history_except:
     - "_processing_timestamp"
     - "_source_file_path"

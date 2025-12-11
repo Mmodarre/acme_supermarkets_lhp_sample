@@ -3,6 +3,7 @@
 
 pipeline: silver_dimensions_sap
 flowgroup: category_dim_TMPL005
+job_name: SAP_SFCC
 
 use_template: TMPL005_silver_dimension_scd2_template
 template_parameters:
@@ -12,15 +13,7 @@ template_parameters:
   primary_keys:
     - "category_id"
   sequence_by: "last_update_dttm"
-  type_casting:
-    category_id: "BIGINT"
-    name: "STRING"
-    parent_category_id: "BIGINT"
-    level: "BIGINT"
-    path: "STRING"
-    created_at: "TIMESTAMP"
-    updated_at: "TIMESTAMP"
-    last_update_dttm: "TIMESTAMP"
+  schema_file: "schema_transforms/dimensions/SAP/category_schema.yaml"
   track_history_except:
     - "_processing_timestamp"
     - "_source_file_path"

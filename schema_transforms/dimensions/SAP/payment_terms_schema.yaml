@@ -1,0 +1,6 @@
+columns:
+  - "payment_terms_id: BIGINT"
+  - "name: STRING"
+  - "description: STRING"
+  - "days: BIGINT"
+  - "last_update_dttm: TIMESTAMP"

@@ -23,10 +23,10 @@ parameters:
     required: true
     description: "Primary key columns for the fact"
   
-  - name: type_casting
-    type: object
+  - name: schema_file
+    type: string
     required: true
-    description: "Column name to data type mapping for schema transform"
+    description: "Path to schema transform file (relative to project root, e.g., 'schema_transforms/facts/SAP/prch_ord_hdr_schema.yaml')"
   
   - name: status_column
     type: string
@@ -80,11 +80,9 @@ actions:
   - name: "transform_{{ table_name }}_schema"
     type: transform
     transform_type: schema
-    source:
-      view: "v_{{ table_name }}_bronze"
-      schema:
-        enforcement: flexible
-        type_casting: "{{ type_casting }}"
+    source: "v_{{ table_name }}_bronze"
+    schema_file: "{{ schema_file }}"
+    enforcement: permissive
     target: "v_{{ table_name }}_standardized"
     readMode: stream
     description: "Apply type casting to {{ table_name }} (keep original column names)"

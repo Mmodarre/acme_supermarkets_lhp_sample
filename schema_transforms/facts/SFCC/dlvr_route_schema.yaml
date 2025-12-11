@@ -1,0 +1,16 @@
+columns:
+  - "route_id: BIGINT"
+  - "delivery_date: DATE"
+  - "slot_template_id: BIGINT"
+  - "vehicle_id: BIGINT"
+  - "location_id: BIGINT"
+  - "route_status: STRING"
+  - "total_orders: BIGINT"
+  - "planned_at: TIMESTAMP"
+  - "started_at: TIMESTAMP"
+  - "completed_at: TIMESTAMP"
+  - "created_at: TIMESTAMP"
+  - "updated_at: TIMESTAMP"
+  - "last_update_dttm: TIMESTAMP"
+
+

@@ -1,0 +1,16 @@
+# Store Inventory Transaction - Transactional Fact
+# Uses silver_transactional_fact_template
+
+pipeline: silver_facts_ncr
+flowgroup: str_invtry_txn_silver_TMPL009
+job_name: NCR
+
+use_template: TMPL009_silver_transactional_fact_template
+template_parameters:
+  table_name: str_invtry_txn
+  source_system: ncr
+  source_table: bronze_ncr_str_invtry_txn
+  schema_file: "schema_transforms/facts/NCR/str_invtry_txn_schema.yaml"
+
+
+

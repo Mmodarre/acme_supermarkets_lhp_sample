@@ -1,0 +1,13 @@
+columns:
+  - "shipment_id: BIGINT"
+  - "order_id: BIGINT"
+  - "fulfillment_location_id: BIGINT"
+  - "carrier_id: BIGINT"
+  - "tracking_number: STRING"
+  - "ship_date: DATE"
+  - "expected_delivery_date: DATE"
+  - "actual_delivery_date: DATE"
+  - "status: STRING"
+  - "created_at: TIMESTAMP"
+  - "updated_at: TIMESTAMP"
+  - "last_update_dttm: TIMESTAMP"

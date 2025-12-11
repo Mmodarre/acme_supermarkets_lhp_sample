@@ -4,6 +4,7 @@
 
 pipeline: silver_dimensions_sap
 flowgroup: product_dim_TMPL008
+job_name: SAP_SFCC
 
 use_template: TMPL008_silver_snapshot_dimension_scd2_template
 template_parameters:
@@ -14,27 +15,7 @@ template_parameters:
     function: "next_product_snapshot_and_version"
   primary_keys:
     - "product_id"
-  type_casting:
-    product_id: "BIGINT"
-    sku: "STRING"
-    upc: "STRING"
-    name: "STRING"
-    brand_id: "BIGINT"
-    category_id: "BIGINT"
-    uom_id: "BIGINT"
-    open_food_facts_code: "STRING"
-    quantity: "STRING"
-    packaging: "STRING"
-    nutrition_data: "STRING"
-    base_cost: "DECIMAL(10,2)"
-    base_price: "DECIMAL(10,2)"
-    reorder_quantity: "BIGINT"
-    shelf_life_days: "BIGINT"
-    status: "STRING"
-    created_at: "TIMESTAMP"
-    updated_at: "TIMESTAMP"
-    last_update_dttm: "TIMESTAMP"
-    _processing_timestamp: "TIMESTAMP"
+  schema_file: "schema_transforms/dimensions/SAP/product_schema.yaml"
   track_history_except:
     - "_processing_timestamp"
     - "_source_file_path"

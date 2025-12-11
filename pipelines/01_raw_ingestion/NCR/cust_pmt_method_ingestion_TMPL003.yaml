@@ -4,10 +4,12 @@ pipeline: raw_ingestions_ncr
 # Flowgroup are conceptual artifacts and has no functional purpose
 # there are used to group actions together in the generated files
 flowgroup: cust_pmt_method_ingestion_TMPL003
-
+job_name: NCR
 # Use the template to generate the actions for the pipeline
 # Template parameters are used to pass in the table name and landing folder
 # The template will generate the actions for the pipeline
+
+
 use_template: TMPL003_parquet_ingestion_template
 template_parameters:
   table_name: raw_ncr_cust_pmt_method

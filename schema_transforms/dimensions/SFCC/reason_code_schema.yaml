@@ -1,0 +1,6 @@
+columns:
+  - "reason_code_id: BIGINT"
+  - "category: STRING"
+  - "code: STRING"
+  - "description: STRING"
+  - "last_update_dttm: TIMESTAMP"

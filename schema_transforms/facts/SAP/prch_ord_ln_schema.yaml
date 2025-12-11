@@ -1,0 +1,11 @@
+columns:
+  - "po_line_id: BIGINT"
+  - "po_id: BIGINT"
+  - "product_id: BIGINT"
+  - "ordered_qty: BIGINT"
+  - "uom_id: BIGINT"
+  - "unit_price: DECIMAL(10,2)"
+  - "tax_rate: DECIMAL(5,2)"
+  - "due_date: DATE"
+  - "status: STRING"
+  - "last_update_dttm: TIMESTAMP"

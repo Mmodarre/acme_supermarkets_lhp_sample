@@ -1,0 +1,7 @@
+columns:
+  - "uom_id: BIGINT"
+  - "code: STRING"
+  - "name: STRING"
+  - "uom_type: STRING"
+  - "last_update_dttm: TIMESTAMP"
+
