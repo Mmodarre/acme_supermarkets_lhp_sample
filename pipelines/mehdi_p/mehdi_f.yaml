@@ -1,0 +1,29 @@
+pipeline: mehdi_p
+flowgroup: mehdi_f
+actions:
+  - name: load_raw_sap_prd_snapshot
+    type: load
+    readMode: stream
+    operational_metadata:
+      - _processing_timestamp
+    source:
+      type: delta
+      database: "{catalog}.{raw_schema}"
+      table: raw_sap_prd_snapshot
+    target: v_load_raw_sap_prd_snapshot
+    where_clause: status = active
+  - name: trans_sql_raw_sap_prd_snapshot
+    type: transform
+    transform_type: sql
+    source: v_load_raw_sap_prd_snapshot
+    target: v_trans_sql_raw_sap_prd_snapshot
+    sql: select * from v_load_raw_sap_prd_snapshot where x =y
+  - name: Streaming Table_9
+    type: write
+    source: v_trans_sql_raw_sap_prd_snapshot
+    write_target:
+      type: streaming_table
+      database: "{catalog}.{silver_schema}"
+      table: mehdi_table
+      cluster_columns:
+        - c1
