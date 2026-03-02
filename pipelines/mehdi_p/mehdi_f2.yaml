@@ -1,0 +1,6 @@
+pipeline: mehdi_p
+flowgroup: mehdi_f2
+use_template: TMPL003_parquet_ingestion_template
+template_parameters:
+  table_name: mehdi_template_test
+  landing_folder: abcd2
